@@ -1,20 +1,21 @@
-// api.js
-
-const API_BASE_URL = "https://pdf-generador-arg-backend-production.up.railway.app";
-// luego lo cambiás por variable de entorno si querés
-
-let authToken = null;
+import { API_BASE } from "./config.js";
 
 /******************************
- * AUTH
+ * AUTH TOKEN STATE
  ******************************/
+let authToken = null;
+
 export function setAuthToken(token) {
   authToken = token;
 }
 
-function getHeaders() {
+/******************************
+ * HEADERS BUILDER
+ ******************************/
+function getHeaders(extraHeaders = {}) {
   const headers = {
-    "Content-Type": "application/json"
+    "Content-Type": "application/json",
+    ...extraHeaders
   };
 
   if (authToken) {
@@ -25,24 +26,99 @@ function getHeaders() {
 }
 
 /******************************
- * VIAJES
+ * GENERIC FETCH WRAPPER
  ******************************/
-export async function loadTravel(travelId) {
-  const res = await fetch(`${API_BASE_URL}/travels/${travelId}`, {
-    headers: getHeaders()
+export async function fetchJSON(endpoint, options = {}) {
+  const res = await fetch(`${API_BASE}${endpoint}`, {
+    headers: getHeaders(options.headers),
+    ...options
   });
 
-  if (!res.ok) throw new Error("Error al cargar viaje");
-  return await res.json();
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || "API Error");
+  }
+
+  return res.json();
 }
 
-export async function saveTravel(travelId, state) {
-  const res = await fetch(`${API_BASE_URL}/travels/${travelId}`, {
+/******************************
+ * VIAJES
+ ******************************/
+
+export function loadTravel(travelId) {
+  return fetchJSON(`/travels/${travelId}`);
+}
+
+export function saveTravel(travelId, state) {
+  return fetchJSON(`/travels/${travelId}`, {
     method: "PUT",
-    headers: getHeaders(),
     body: JSON.stringify(state)
   });
+}
 
-  if (!res.ok) throw new Error("Error al guardar viaje");
-  return await res.json();
+/******************************
+ * CLIENTES
+ ******************************/
+
+export function getClientes() {
+  return fetchJSON("/api/clientes");
+}
+
+export function getCliente(id) {
+  return fetchJSON(`/api/clientes/${id}`);
+}
+
+export function createCliente(data) {
+  return fetchJSON("/api/clientes", {
+    method: "POST",
+    body: JSON.stringify(data)
+  });
+}
+
+export function updateCliente(id, data) {
+  return fetchJSON(`/api/clientes/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(data)
+  });
+}
+
+export function deleteCliente(id) {
+  return fetchJSON(`/api/clientes/${id}`, {
+    method: "DELETE"
+  });
+}
+
+/******************************
+ * DOCUMENTOS CLIENTE
+ ******************************/
+
+export function getClientDocuments(clientId) {
+  return fetchJSON(`/api/client-documents/${clientId}`);
+}
+
+export function createClientDocument(data) {
+  return fetchJSON("/api/client-documents", {
+    method: "POST",
+    body: JSON.stringify(data)
+  });
+}
+
+/******************************
+ * PDFS
+ ******************************/
+
+export function generatePdf(type, cotizacionId) {
+  window.open(
+    `${API_BASE}/api/pdfs/${type}?cotizacion_id=${cotizacionId}`,
+    "_blank"
+  );
+}
+
+export function getPdfs(cotizacionId) {
+  return fetchJSON(`/api/pdfs/${cotizacionId}`);
+}
+
+export function getPdfSections(cotizacionId) {
+  return fetchJSON(`/api/pdf-sections/${cotizacionId}`);
 }
