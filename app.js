@@ -16,21 +16,6 @@ import "./pdf.js";
  *************************************************/
 document.addEventListener("DOMContentLoaded", initApp);
 
-function initApp() {
-  try {
-    hydrateState();
-    ensureDefaultTravel();
-
-    console.log("App inicializada correctamente");
-  } catch (error) {
-    console.error("Error inicializando app:", error);
-  }
-}
-
-/*************************************************
- * STATE HYDRATION
- *************************************************/
-
 
 /*************************************************
  * DEFAULT TRAVEL
