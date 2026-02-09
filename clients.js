@@ -12,28 +12,12 @@ async function initClients() {
 }
 
 /********************************
-BOTON NUEVO CLIENTE
-*********************************/
-document.addEventListener("click", e => {
-
-  if (e.target.closest("[data-client-new]")) {
-    setActiveClientId(null);
-    clearClientForm();
-  }
-
-});
-
-/********************************
 LOAD CLIENTES
 *********************************/
 export async function loadClients() {
 
   const res = await fetch(`${API_BASE}/api/clientes`);
-
-  if (!res.ok) {
-    console.error("Error cargando clientes");
-    return;
-  }
+  if (!res.ok) return console.error("Error cargando clientes");
 
   const clients = await res.json();
 
@@ -61,113 +45,170 @@ document.addEventListener("change", async e => {
   const id = Number(select.value);
   setActiveClientId(id);
 
-  if (!id) {
-    clearClientForm();
-    return;
-  }
+  if (!id) return clearClientForm();
 
   const res = await fetch(`${API_BASE}/api/clientes/${id}`);
-
-  if (!res.ok) {
-    alert("Error cargando cliente");
-    return;
-  }
+  if (!res.ok) return alert("Error cargando cliente");
 
   const client = await res.json();
 
   fillClientForm(client);
+  loadClientDocuments(id);
 
 });
 
 /********************************
-CREAR / EDITAR CLIENTE
+GLOBAL CLICK HANDLER
 *********************************/
 document.addEventListener("click", async e => {
 
-  const btn = e.target.closest("[data-client-save]");
-  if (!btn) return;
+  /* NUEVO CLIENTE */
+  if (e.target.closest("[data-client-new]")) {
+    setActiveClientId(null);
+    clearClientForm();
+  }
 
-  const payload = {
-    nombre: val("name"),
-    telefono: val("phone"),
-    email: val("email"),
-    notas: val("notes")
-  };
+  /* GUARDAR CLIENTE */
+  if (e.target.closest("[data-client-save]")) {
 
-  const res = await fetch(
-    activeClientId
-      ? `${API_BASE}/api/clientes/${activeClientId}`
-      : `${API_BASE}/api/clientes`,
-    {
-      method: activeClientId ? "PUT" : "POST",
+    const payload = {
+      nombre: val("name"),
+      telefono: val("phone"),
+      email: val("email"),
+      notas: val("notes")
+    };
+
+    const res = await fetch(
+      activeClientId
+        ? `${API_BASE}/api/clientes/${activeClientId}`
+        : `${API_BASE}/api/clientes`,
+      {
+        method: activeClientId ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      }
+    );
+
+    if (!res.ok) return alert("Error guardando cliente");
+
+    const saved = await res.json();
+    const clientId = saved.id || activeClientId;
+
+    setActiveClientId(clientId);
+
+    await loadClients();
+
+    qs("[data-client-select]").value = clientId;
+
+    const full = await fetch(`${API_BASE}/api/clientes/${clientId}`);
+    fillClientForm(await full.json());
+  }
+
+  /* ELIMINAR CLIENTE */
+  if (e.target.closest("[data-client-delete]")) {
+
+    if (!activeClientId) return;
+    if (!confirm("Eliminar cliente?")) return;
+
+    const res = await fetch(`${API_BASE}/api/clientes/${activeClientId}`, {
+      method: "DELETE"
+    });
+
+    if (!res.ok) return alert("Error eliminando cliente");
+
+    setActiveClientId(null);
+    clearClientForm();
+    loadClients();
+  }
+
+  /* GUARDAR DOCUMENTO */
+  if (e.target.closest("[data-doc-save]")) {
+
+    if (!activeClientId) return;
+
+    const res = await fetch(`${API_BASE}/api/client-documents`, {
+      method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    }
-  );
+      body: JSON.stringify({
+        client_id: activeClientId,
+        type: qs('[data-doc="type"]').value,
+        number: qs('[data-doc="number"]').value,
+        expiry: qs('[data-doc="expiry"]').value,
+        notes: qs('[data-doc="notes"]').value
+      })
+    });
 
-  if (!res.ok) {
-    alert("Error guardando cliente");
-    return;
+    if (!res.ok) return alert("Error guardando documento");
+
+    clearDocForm();
+    loadClientDocuments(activeClientId);
   }
 
-  const saved = await res.json();
+  /* ELIMINAR DOCUMENTO */
+  const deleteBtn = e.target.closest("[data-doc-delete]");
+  if (deleteBtn) {
 
-  const clientId = saved.id || activeClientId;
+    if (!confirm("Eliminar documento?")) return;
 
-  setActiveClientId(clientId);
+    await fetch(`${API_BASE}/api/client-documents/${deleteBtn.dataset.docDelete}`, {
+      method: "DELETE"
+    });
 
-  await loadClients();
-
-  const select = qs("[data-client-select]");
-  if (select) select.value = clientId;
-
-  // 🔥 REFETCH CLIENTE COMPLETO
-  const fullClientRes = await fetch(`${API_BASE}/api/clientes/${clientId}`);
-  const fullClient = await fullClientRes.json();
-
-  fillClientForm(fullClient);
+    loadClientDocuments(activeClientId);
+  }
 
 });
 
 /********************************
-ELIMINAR CLIENTE
+DOCUMENTOS
 *********************************/
-document.addEventListener("click", async e => {
+async function loadClientDocuments(clientId) {
 
-  const btn = e.target.closest("[data-client-delete]");
-  if (!btn || !activeClientId) return;
+  const res = await fetch(`${API_BASE}/api/client-documents/${clientId}`);
+  if (!res.ok) return;
 
-  if (!confirm("Eliminar cliente?")) return;
+  const docs = await res.json();
 
-  const res = await fetch(`${API_BASE}/api/clientes/${activeClientId}`, {
-    method: "DELETE"
+  const list = qs("[data-doc-list]");
+  if (!list) return;
+
+  list.innerHTML = "";
+
+  docs.forEach(d => {
+
+    const div = document.createElement("div");
+
+    div.innerHTML = `
+      <div class="border p-2 mb-2">
+        <strong>${d.type}</strong> - ${d.number}
+        <button data-doc-delete="${d.id}">Eliminar</button>
+      </div>
+    `;
+
+    list.appendChild(div);
   });
-
-  if (!res.ok) {
-    alert("Error eliminando cliente");
-    return;
-  }
-
-  setActiveClientId(null);
-  clearClientForm();
-  loadClients();
-});
+}
 
 /********************************
 FORM HELPERS
 *********************************/
 function fillClientForm(c) {
-
   set("id", c.id);
   set("name", c.nombre);
   set("phone", c.telefono);
   set("email", c.email);
   set("notes", c.notas);
-
 }
 
 function clearClientForm() {
   ["id","name","phone","email","notes"].forEach(k => set(k,""));
+}
+
+function clearDocForm() {
+  ["type","number","expiry","notes"].forEach(k => {
+    const el = qs(`[data-doc="${k}"]`);
+    if (el) el.value = "";
+  });
 }
 
 function set(key,value) {
