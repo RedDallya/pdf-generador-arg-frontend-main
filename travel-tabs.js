@@ -25,6 +25,8 @@ export async function loadTravels() {
   } catch (err) {
     console.error(err);
   }
+  
+document.addEventListener("travel-cleared", clearTravelForm);
 
   /* ============================
      SIN VIAJES → TAB VACÍO

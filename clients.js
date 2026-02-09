@@ -56,6 +56,7 @@ document.addEventListener("change", async e => {
 
   fillClientForm(client);
   loadClientDocuments(id);
+  document.dispatchEvent(new Event("travel-cleared"));
 
   document.dispatchEvent(new Event("client-selected"));
 });
