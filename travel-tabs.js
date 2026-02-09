@@ -31,12 +31,13 @@ export async function loadTravels() {
   ============================ */
   if (!travels.length) {
 
-    setActiveTravelId(null);
+  setActiveTravelId(null);
 
-    renderEmptyTravelTab();
+  document.dispatchEvent(new Event("travel-cleared"));
 
-    return;
-  }
+  return;
+}
+
 
   /* ============================
      CON VIAJES
