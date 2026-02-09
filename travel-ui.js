@@ -100,3 +100,11 @@ function set(key, value) {
   const el = document.querySelector(`[data-travel="${key}"]`);
   if (el) el.value = value ?? "";
 }
+
+export function clearTravelForm() {
+
+  document.querySelectorAll("[data-travel]").forEach(el => {
+    el.value = "";
+  });
+
+}

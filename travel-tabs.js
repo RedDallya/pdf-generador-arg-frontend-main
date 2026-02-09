@@ -122,7 +122,10 @@ document.addEventListener("click", async e => {
 
     setActiveTravelId(newTravel.id);
 
-    await loadTravels();
+document.dispatchEvent(new Event("travel-selected"));
+
+await loadTravels();
+
   }
 
   /* ELIMINAR */
