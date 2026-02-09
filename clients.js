@@ -53,6 +53,7 @@ document.addEventListener("change", async e => {
   fillClientForm(client);
   loadClientDocuments(id);
   loadTravels();
+document.dispatchEvent(new Event("client-selected"));
 
 });
 

@@ -56,3 +56,19 @@ function set(key,value) {
   const el = document.querySelector(`[data-travel="${key}"]`);
   if (el) el.value = value || "";
 }
+
+import { appState } from "./state.js";
+import { getCliente } from "./api.js";
+
+async function fillClientAssociated() {
+
+  if (!appState.activeClientId) return;
+
+  const cliente = await getCliente(appState.activeClientId);
+
+  const input = document.querySelector('[data-travel="cliente_nombre"]');
+
+  if (input) input.value = cliente.nombre;
+}
+
+document.addEventListener("client-selected", fillClientAssociated);
