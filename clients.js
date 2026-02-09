@@ -1,15 +1,13 @@
 import { API_BASE } from "./config.js";
 import { qs, val } from "./dom.js";
-import { activeClientId, setActiveClientId } from "./state.js";
+import { appState, setActiveClientId } from "./state.js";
 
 /********************************
 INIT
 *********************************/
-document.addEventListener("DOMContentLoaded", initClients);
-
-async function initClients() {
+document.addEventListener("DOMContentLoaded", async () => {
   await loadClients();
-}
+});
 
 /********************************
 LOAD CLIENTES
@@ -54,7 +52,6 @@ document.addEventListener("change", async e => {
 
   fillClientForm(client);
   loadClientDocuments(id);
-
 });
 
 /********************************
@@ -72,23 +69,21 @@ document.addEventListener("click", async e => {
   if (e.target.closest("[data-client-save]")) {
 
     const payload = {
-  nombre: val("name"),
-  telefono: val("phone"),
-  email: val("email"),
-  notas: val("notes"),
-  status: val("status"),
-  location: val("location"),
-  tags: val("tags"),
-  created_at: val("created")
-};
-
+      nombre: val("name"),
+      telefono: val("phone"),
+      email: val("email"),
+      notas: val("notes"),
+      status: val("status"),
+      location: val("location"),
+      created_at: val("created")
+    };
 
     const res = await fetch(
-      activeClientId
-        ? `${API_BASE}/api/clientes/${activeClientId}`
+      appState.activeClientId
+        ? `${API_BASE}/api/clientes/${appState.activeClientId}`
         : `${API_BASE}/api/clientes`,
       {
-        method: activeClientId ? "PUT" : "POST",
+        method: appState.activeClientId ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       }
@@ -97,7 +92,7 @@ document.addEventListener("click", async e => {
     if (!res.ok) return alert("Error guardando cliente");
 
     const saved = await res.json();
-    const clientId = saved.id || activeClientId;
+    const clientId = saved.id || appState.activeClientId;
 
     setActiveClientId(clientId);
 
@@ -112,10 +107,10 @@ document.addEventListener("click", async e => {
   /* ELIMINAR CLIENTE */
   if (e.target.closest("[data-client-delete]")) {
 
-    if (!activeClientId) return;
+    if (!appState.activeClientId) return;
     if (!confirm("Eliminar cliente?")) return;
 
-    const res = await fetch(`${API_BASE}/api/clientes/${activeClientId}`, {
+    const res = await fetch(`${API_BASE}/api/clientes/${appState.activeClientId}`, {
       method: "DELETE"
     });
 
@@ -126,8 +121,33 @@ document.addEventListener("click", async e => {
     loadClients();
   }
 
+  /* GUARDAR DOCUMENTO */
+  if (e.target.closest("[data-doc-save]")) {
 
+    if (!appState.activeClientId) return alert("Seleccioná cliente");
 
+    const formData = new FormData();
+
+    formData.append("client_id", appState.activeClientId);
+    formData.append("type", qs('[data-doc="type"]').value);
+    formData.append("number", qs('[data-doc="number"]').value);
+    formData.append("expiry", qs('[data-doc="expiry"]').value);
+    formData.append("notes", qs('[data-doc="notes"]').value);
+
+    const fileInput = qs('[data-doc="files"]');
+
+    if (fileInput.files[0]) {
+      formData.append("file", fileInput.files[0]);
+    }
+
+    await fetch(`${API_BASE}/api/client-documents`, {
+      method: "POST",
+      body: formData
+    });
+
+    loadClientDocuments(appState.activeClientId);
+    clearDocForm();
+  }
 
   /* ELIMINAR DOCUMENTO */
   const deleteBtn = e.target.closest("[data-doc-delete]");
@@ -139,35 +159,8 @@ document.addEventListener("click", async e => {
       method: "DELETE"
     });
 
-    loadClientDocuments(activeClientId);
+    loadClientDocuments(appState.activeClientId);
   }
-  /* GUARDAR DOCUMENTO */
-document.addEventListener("click", async e => {
-
-  const btn = e.target.closest("[data-doc-save]");
-  if (!btn || !activeClientId) return;
-
-  const formData = new FormData();
-
-  formData.append("client_id", activeClientId);
-  formData.append("type", qs('[data-doc="type"]').value);
-  formData.append("number", qs('[data-doc="number"]').value);
-  formData.append("expiry", qs('[data-doc="expiry"]').value);
-  formData.append("notes", qs('[data-doc="notes"]').value);
-
-  const fileInput = qs('[data-doc="files"]');
-
-  if (fileInput.files[0]) {
-    formData.append("file", fileInput.files[0]);
-  }
-
-  await fetch(`${API_BASE}/api/client-documents`, {
-    method: "POST",
-    body: formData
-  });
-
-  loadClientDocuments(activeClientId);
-});
 });
 
 /********************************
@@ -185,36 +178,33 @@ async function loadClientDocuments(clientId) {
 
   list.innerHTML = "";
 
-  
   docs.forEach(d => {
 
-  const div = document.createElement("div");
+    const div = document.createElement("div");
 
-  div.innerHTML = `
-    <div class="border p-2 mb-2">
-      <strong>${d.type}</strong> - ${d.number}
+    div.innerHTML = `
+      <div class="border p-2 mb-2">
+        <strong>${d.type}</strong> - ${d.number}
 
-      ${d.file_name 
-        ? `<a href="${API_BASE}${d.file_path}" target="_blank">
-            📎 ${d.file_name}
-           </a>`
-        : ""
-      }
+        ${d.file_name
+          ? `<a href="${API_BASE}${d.file_path}" target="_blank">
+              📎 ${d.file_name}
+             </a>`
+          : ""
+        }
 
-      <button data-doc-delete="${d.id}">Eliminar</button>
-    </div>
-  `;
+        <button data-doc-delete="${d.id}">Eliminar</button>
+      </div>
+    `;
 
-  list.appendChild(div);
-});
-
+    list.appendChild(div);
+  });
 }
 
 /********************************
 FORM HELPERS
 *********************************/
 function fillClientForm(c) {
-
   set("id", c.id);
   set("name", c.nombre);
   set("phone", c.telefono);
@@ -222,13 +212,12 @@ function fillClientForm(c) {
   set("notes", c.notas);
   set("status", c.status);
   set("location", c.location);
-  set("tags", c.tags);
   set("created", c.created_at);
 }
 
-
 function clearClientForm() {
-  ["id","name","phone","email","notes"].forEach(k => set(k,""));
+  ["id","name","phone","email","notes","status","location","created"]
+    .forEach(k => set(k,""));
 }
 
 function clearDocForm() {
