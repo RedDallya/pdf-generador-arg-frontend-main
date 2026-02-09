@@ -67,6 +67,8 @@ document.addEventListener("click", async e => {
   };
 
   await updateTravel(appState.activeTravelId, payload);
+  document.dispatchEvent(new Event("travel-saved"));
+
 
   alert("Viaje guardado");
 });

@@ -6,6 +6,9 @@ import {
 
 import { appState, setActiveTravelId } from "./state.js";
 
+/************************************************
+LOAD TRAVELS
+*************************************************/
 export async function loadTravels() {
 
   if (!appState.activeClientId) return;
@@ -29,9 +32,20 @@ export async function loadTravels() {
   }
 }
 
+/************************************************
+REFRESH CUANDO SE GUARDA
+*************************************************/
+document.addEventListener("travel-saved", loadTravels);
+document.addEventListener("client-selected", loadTravels);
+
+
+/************************************************
+RENDER TAB
+*************************************************/
 function renderTravelTab(travel) {
 
   const container = document.querySelector("[data-travel-tabs]");
+  if (!container) return;
 
   const div = document.createElement("div");
 
@@ -58,6 +72,9 @@ function renderTravelTab(travel) {
   container.appendChild(div);
 }
 
+/************************************************
+CLICK HANDLER
+*************************************************/
 document.addEventListener("click", async e => {
 
   if (!appState.activeClientId) return;
@@ -97,6 +114,9 @@ document.addEventListener("click", async e => {
     if (!confirm("Eliminar viaje?")) return;
 
     await deleteTravel(travelId);
+    if (Number(appState.activeTravelId) === travelId) {
+      setActiveTravelId(null);
+    }
 
     await loadTravels();
   }
