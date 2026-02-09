@@ -1,10 +1,19 @@
 import { API_BASE } from "./config.js";
 import { qs, val } from "./dom.js";
 import { activeClientId, setActiveClientId } from "./state.js";
-document.addEventListener("DOMContentLoaded", () => {
-  loadClients();
-});
 
+/********************************
+INIT
+*********************************/
+document.addEventListener("DOMContentLoaded", initClients);
+
+async function initClients() {
+  await loadClients();
+}
+
+/********************************
+BOTON NUEVO CLIENTE
+*********************************/
 document.addEventListener("click", e => {
 
   if (e.target.closest("[data-client-new]")) {
@@ -20,9 +29,17 @@ LOAD CLIENTES
 export async function loadClients() {
 
   const res = await fetch(`${API_BASE}/api/clientes`);
+
+  if (!res.ok) {
+    console.error("Error cargando clientes");
+    return;
+  }
+
   const clients = await res.json();
 
   const select = qs("[data-client-select]");
+  if (!select) return;
+
   select.innerHTML = `<option value="">Seleccionar cliente</option>`;
 
   clients.forEach(c => {
@@ -32,8 +49,6 @@ export async function loadClients() {
     select.appendChild(opt);
   });
 }
-
-document.addEventListener("DOMContentLoaded", loadClients);
 
 /********************************
 SELECT CLIENTE
@@ -46,9 +61,18 @@ document.addEventListener("change", async e => {
   const id = Number(select.value);
   setActiveClientId(id);
 
-  if (!id) return;
+  if (!id) {
+    clearClientForm();
+    return;
+  }
 
   const res = await fetch(`${API_BASE}/api/clientes/${id}`);
+
+  if (!res.ok) {
+    alert("Error cargando cliente");
+    return;
+  }
+
   const client = await res.json();
 
   fillClientForm(client);
@@ -88,13 +112,21 @@ document.addEventListener("click", async e => {
 
   const saved = await res.json();
 
-  setActiveClientId(saved.id);
+  const clientId = saved.id || activeClientId;
+
+  setActiveClientId(clientId);
 
   await loadClients();
 
-  qs("[data-client-select]").value = saved.id;
+  const select = qs("[data-client-select]");
+  if (select) select.value = clientId;
 
-  fillClientForm(saved);
+  // 🔥 REFETCH CLIENTE COMPLETO
+  const fullClientRes = await fetch(`${API_BASE}/api/clientes/${clientId}`);
+  const fullClient = await fullClientRes.json();
+
+  fillClientForm(fullClient);
+
 });
 
 /********************************
@@ -107,9 +139,14 @@ document.addEventListener("click", async e => {
 
   if (!confirm("Eliminar cliente?")) return;
 
-  await fetch(`${API_BASE}/api/clientes/${activeClientId}`, {
+  const res = await fetch(`${API_BASE}/api/clientes/${activeClientId}`, {
     method: "DELETE"
   });
+
+  if (!res.ok) {
+    alert("Error eliminando cliente");
+    return;
+  }
 
   setActiveClientId(null);
   clearClientForm();
@@ -120,11 +157,13 @@ document.addEventListener("click", async e => {
 FORM HELPERS
 *********************************/
 function fillClientForm(c) {
+
   set("id", c.id);
   set("name", c.nombre);
   set("phone", c.telefono);
   set("email", c.email);
   set("notes", c.notas);
+
 }
 
 function clearClientForm() {
