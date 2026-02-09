@@ -1,6 +1,9 @@
 import { API_BASE } from "./config.js";
 import { qs, val } from "./dom.js";
 import { activeClientId, setActiveClientId } from "./state.js";
+document.addEventListener("DOMContentLoaded", () => {
+  loadClients();
+});
 
 /********************************
 LOAD CLIENTES
