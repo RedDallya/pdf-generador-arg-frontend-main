@@ -1,5 +1,7 @@
-export let activeClientId = null;
+export const appState = {
+  activeClientId: null
+};
 
 export function setActiveClientId(id) {
-  activeClientId = id;
+  appState.activeClientId = id;
 }
