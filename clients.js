@@ -126,28 +126,8 @@ document.addEventListener("click", async e => {
     loadClients();
   }
 
-  /* GUARDAR DOCUMENTO */
-  if (e.target.closest("[data-doc-save]")) {
 
-    if (!activeClientId) return;
 
-    const res = await fetch(`${API_BASE}/api/client-documents`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        client_id: activeClientId,
-        type: qs('[data-doc="type"]').value,
-        number: qs('[data-doc="number"]').value,
-        expiry: qs('[data-doc="expiry"]').value,
-        notes: qs('[data-doc="notes"]').value
-      })
-    });
-
-    if (!res.ok) return alert("Error guardando documento");
-
-    clearDocForm();
-    loadClientDocuments(activeClientId);
-  }
 
   /* ELIMINAR DOCUMENTO */
   const deleteBtn = e.target.closest("[data-doc-delete]");
@@ -161,7 +141,33 @@ document.addEventListener("click", async e => {
 
     loadClientDocuments(activeClientId);
   }
+  /* GUARDAR DOCUMENTO */
+document.addEventListener("click", async e => {
 
+  const btn = e.target.closest("[data-doc-save]");
+  if (!btn || !activeClientId) return;
+
+  const formData = new FormData();
+
+  formData.append("client_id", activeClientId);
+  formData.append("type", qs('[data-doc="type"]').value);
+  formData.append("number", qs('[data-doc="number"]').value);
+  formData.append("expiry", qs('[data-doc="expiry"]').value);
+  formData.append("notes", qs('[data-doc="notes"]').value);
+
+  const fileInput = qs('[data-doc="files"]');
+
+  if (fileInput.files[0]) {
+    formData.append("file", fileInput.files[0]);
+  }
+
+  await fetch(`${API_BASE}/api/client-documents`, {
+    method: "POST",
+    body: formData
+  });
+
+  loadClientDocuments(activeClientId);
+});
 });
 
 /********************************
@@ -179,19 +185,29 @@ async function loadClientDocuments(clientId) {
 
   list.innerHTML = "";
 
+  
   docs.forEach(d => {
 
-    const div = document.createElement("div");
+  const div = document.createElement("div");
 
-    div.innerHTML = `
-      <div class="border p-2 mb-2">
-        <strong>${d.type}</strong> - ${d.number}
-        <button data-doc-delete="${d.id}">Eliminar</button>
-      </div>
-    `;
+  div.innerHTML = `
+    <div class="border p-2 mb-2">
+      <strong>${d.type}</strong> - ${d.number}
 
-    list.appendChild(div);
-  });
+      ${d.file_name 
+        ? `<a href="${API_BASE}${d.file_path}" target="_blank">
+            📎 ${d.file_name}
+           </a>`
+        : ""
+      }
+
+      <button data-doc-delete="${d.id}">Eliminar</button>
+    </div>
+  `;
+
+  list.appendChild(div);
+});
+
 }
 
 /********************************
