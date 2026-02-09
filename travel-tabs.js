@@ -93,7 +93,8 @@ document.addEventListener("click", async e => {
   if (!appState.activeClientId) return;
 
   const tab = e.target.closest(".travel-tab");
-  const travelId = tab ? Number(tab.dataset.travelId) : null;
+  const travelId = Number(tab?.dataset.travelId);
+
 
   /* ===============================
      SELECCIONAR VIAJE
