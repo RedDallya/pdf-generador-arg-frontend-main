@@ -1,7 +1,7 @@
 import { API_BASE } from "./config.js";
 import { qs, val } from "./dom.js";
 import { appState, setActiveClientId } from "./state.js";
-
+import { loadTravels } from "./travel-tabs.js";
 /********************************
 INIT
 *********************************/
@@ -52,6 +52,8 @@ document.addEventListener("change", async e => {
 
   fillClientForm(client);
   loadClientDocuments(id);
+  loadTravels();
+
 });
 
 /********************************
@@ -187,11 +189,11 @@ async function loadClientDocuments(clientId) {
         <strong>${d.type}</strong> - ${d.number}
 
         ${d.file_name
-          ? `<a href="${API_BASE}${d.file_path}" target="_blank">
+        ? `<a href="${API_BASE}${d.file_path}" target="_blank">
               📎 ${d.file_name}
              </a>`
-          : ""
-        }
+        : ""
+      }
 
         <button data-doc-delete="${d.id}">Eliminar</button>
       </div>
@@ -216,18 +218,18 @@ function fillClientForm(c) {
 }
 
 function clearClientForm() {
-  ["id","name","phone","email","notes","status","location","created"]
-    .forEach(k => set(k,""));
+  ["id", "name", "phone", "email", "notes", "status", "location", "created"]
+    .forEach(k => set(k, ""));
 }
 
 function clearDocForm() {
-  ["type","number","expiry","notes"].forEach(k => {
+  ["type", "number", "expiry", "notes"].forEach(k => {
     const el = qs(`[data-doc="${k}"]`);
     if (el) el.value = "";
   });
 }
 
-function set(key,value) {
+function set(key, value) {
   const el = document.querySelector(`[data-client="${key}"]`);
   if (el) el.value = value || "";
 }

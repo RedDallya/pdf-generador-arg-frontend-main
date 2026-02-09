@@ -42,23 +42,15 @@ export async function fetchJSON(endpoint, options = {}) {
   return res.json();
 }
 
+
 /******************************
- * VIAJES (persistencia real)
+ * VIAJES
  ******************************/
 
-/**
- * Obtener viajes por cliente
- * GET /api/viajes/cliente/:clienteId
- */
 export function getTravelsByClient(clientId) {
-  return fetchJSON(`/api/viajes/cliente/${clientId}`);
+  return fetchJSON(`/api/viajes?cliente_id=${clientId}`);
 }
 
-/**
- * Crear viaje (mínimo)
- * POST /api/viajes
- * body: { cliente_id }
- */
 export function createTravel(data) {
   return fetchJSON("/api/viajes", {
     method: "POST",
@@ -66,10 +58,6 @@ export function createTravel(data) {
   });
 }
 
-/**
- * Actualizar viaje
- * PUT /api/viajes/:id
- */
 export function updateTravel(id, data) {
   return fetchJSON(`/api/viajes/${id}`, {
     method: "PUT",
@@ -77,10 +65,6 @@ export function updateTravel(id, data) {
   });
 }
 
-/**
- * Eliminar viaje
- * DELETE /api/viajes/:id
- */
 export function deleteTravel(id) {
   return fetchJSON(`/api/viajes/${id}`, {
     method: "DELETE"
