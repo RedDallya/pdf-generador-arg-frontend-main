@@ -1,5 +1,7 @@
 export const appState = {
-  activeClientId: null
+  activeClientId: null,
+  activeTravelId: "travel_1",
+  travels: {}
 };
 
 export function setActiveClientId(id) {
