@@ -1,5 +1,4 @@
 import { appState } from "./state.js";
-import { loadState } from "./storage.js";
 import { createEmptyTravel } from "./travels.js";
 import "./clients.js";
 
@@ -31,9 +30,7 @@ function initApp() {
 /*************************************************
  * STATE HYDRATION
  *************************************************/
-function hydrateState() {
-  loadState();
-}
+
 
 /*************************************************
  * DEFAULT TRAVEL
