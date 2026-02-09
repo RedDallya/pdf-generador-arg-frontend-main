@@ -5,6 +5,15 @@ document.addEventListener("DOMContentLoaded", () => {
   loadClients();
 });
 
+document.addEventListener("click", e => {
+
+  if (e.target.closest("[data-client-new]")) {
+    setActiveClientId(null);
+    clearClientForm();
+  }
+
+});
+
 /********************************
 LOAD CLIENTES
 *********************************/
