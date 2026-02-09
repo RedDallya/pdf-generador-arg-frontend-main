@@ -48,14 +48,6 @@ export async function fetchJSON(endpoint, options = {}) {
 }
 
 
-/******************************
- * VIAJES
- ******************************/
-
-export function getTravelsByClient(clientId) {
-  return fetchJSON(`/api/viajes?cliente_id=${clientId}`);
-}
-
 export function createTravel(data) {
   return fetchJSON("/api/viajes", {
     method: "POST",
