@@ -198,12 +198,18 @@ async function loadClientDocuments(clientId) {
 FORM HELPERS
 *********************************/
 function fillClientForm(c) {
+
   set("id", c.id);
   set("name", c.nombre);
   set("phone", c.telefono);
   set("email", c.email);
   set("notes", c.notas);
+  set("status", c.status);
+  set("location", c.location);
+  set("tags", c.tags);
+  set("created", c.created_at);
 }
+
 
 function clearClientForm() {
   ["id","name","phone","email","notes"].forEach(k => set(k,""));
