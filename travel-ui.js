@@ -57,7 +57,7 @@ function set(key,value) {
   if (el) el.value = value || "";
 }
 
-import { appState } from "./state.js";
+
 import { getCliente } from "./api.js";
 
 async function fillClientAssociated() {
