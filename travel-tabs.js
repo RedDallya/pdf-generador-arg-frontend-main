@@ -1,3 +1,5 @@
+import { getTravel } from "./api.js";
+
 import {
   getTravelsByClient,
   createTravel,
@@ -239,3 +241,38 @@ function renderEmptyTravelTab() {
 
   container.appendChild(div);
 }
+
+document.addEventListener("click", async e => {
+
+  if (!e.target.closest("[data-delete-travel-global]")) return;
+
+  if (!appState.activeTravelId) return;
+
+  if (!confirm("Eliminar viaje?")) return;
+
+  await deleteTravel(appState.activeTravelId);
+
+  setActiveTravelId(null);
+
+  await loadTravels();
+  document.dispatchEvent(new Event("travel-selected"));
+});
+
+document.addEventListener("click", async e => {
+
+  if (!e.target.closest("[data-duplicate-travel-global]")) return;
+
+  if (!appState.activeTravelId) return;
+
+  const current = await getTravel(appState.activeTravelId);
+
+  const newTravel = await createTravel({
+    cliente_id: appState.activeClientId,
+    destino: `${current.destino || "Viaje"} copia`
+  });
+
+  setActiveTravelId(newTravel.id);
+
+  await loadTravels();
+  document.dispatchEvent(new Event("travel-selected"));
+});
