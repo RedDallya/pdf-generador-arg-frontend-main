@@ -182,7 +182,48 @@
 
 
     <!-- HEADER / LISTADO DE VIAJES -->
-    <div class="travel-tabs mb-4" data-travel-tabs></div>
+    <!-- HEADER / LISTADO DE VIAJES -->
+<div class="card p-3 mb-4">
+
+  <div class="d-flex gap-2 align-items-center flex-wrap">
+
+    <!-- SELECTOR DE VIAJES -->
+    <select
+      class="form-select form-select-sm w-auto"
+      data-travel-switcher>
+    </select>
+
+    <!-- BOTÓN DUPLICAR -->
+    <button
+      type="button"
+      class="btn btn-sm btn-outline-secondary"
+      data-duplicate-travel-global>
+      ⧉
+    </button>
+
+    <!-- BOTÓN NUEVO VIAJE -->
+    <button
+      type="button"
+      class="btn btn-sm btn-outline-success"
+      data-add-travel>
+      AGREGAR +
+    </button>
+
+    <!-- BOTÓN ELIMINAR -->
+    <button
+      type="button"
+      class="btn btn-sm btn-outline-danger"
+      data-delete-travel-global>
+      ✕
+    </button>
+
+  </div>
+
+  <!-- CONTENEDOR TABS VISUALES -->
+  <div class="travel-tabs mt-3" data-travel-tabs></div>
+
+</div>
+
 
 
 

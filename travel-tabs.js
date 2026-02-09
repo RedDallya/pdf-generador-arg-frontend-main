@@ -26,9 +26,7 @@ export async function loadTravels() {
     console.error(err);
   }
 
-  /* ============================
-     SIN VIAJES
-  ============================ */
+  /* ================= SIN VIAJES ================= */
   if (!travels.length) {
 
     setActiveTravelId(null);
@@ -37,24 +35,26 @@ export async function loadTravels() {
 
     document.dispatchEvent(new Event("travel-cleared"));
 
+    populateTravelSwitcher([]);
+
     return;
   }
 
-  /* ============================
-     VALIDAR ACTIVE ID
-  ============================ */
+  /* ================= VALIDAR ACTIVE ================= */
 
-  const exists = travels.some(t => Number(t.id) === Number(appState.activeTravelId));
+  const exists = travels.some(
+    t => Number(t.id) === Number(appState.activeTravelId)
+  );
 
   if (!exists) {
     setActiveTravelId(travels[0].id);
   }
 
-  /* ============================
-     RENDER
-  ============================ */
+  /* ================= RENDER ================= */
 
   travels.forEach(renderTravelTab);
+
+  populateTravelSwitcher(travels);
 
   document.dispatchEvent(new Event("travel-selected"));
 }
@@ -64,6 +64,54 @@ REFRESH EVENTS
 *************************************************/
 document.addEventListener("travel-saved", loadTravels);
 document.addEventListener("client-selected", loadTravels);
+
+/************************************************
+TRAVEL SWITCHER (SELECT GLOBAL)
+*************************************************/
+function populateTravelSwitcher(travels) {
+
+  const select = document.querySelector("[data-travel-switcher]");
+  if (!select) return;
+
+  select.innerHTML = "";
+
+  if (!travels.length) {
+
+    const opt = document.createElement("option");
+    opt.textContent = "Sin viajes";
+    select.appendChild(opt);
+    return;
+  }
+
+  travels.forEach(t => {
+
+    const opt = document.createElement("option");
+
+    opt.value = t.id;
+    opt.textContent = t.destino || `Viaje ${t.id}`;
+
+    if (Number(t.id) === Number(appState.activeTravelId)) {
+      opt.selected = true;
+    }
+
+    select.appendChild(opt);
+  });
+}
+
+/************************************************
+CAMBIO DESDE SELECT
+*************************************************/
+document.addEventListener("change", e => {
+
+  const select = e.target.closest("[data-travel-switcher]");
+  if (!select) return;
+
+  const travelId = Number(select.value);
+
+  setActiveTravelId(travelId);
+
+  document.dispatchEvent(new Event("travel-selected"));
+});
 
 /************************************************
 RENDER TAB
@@ -83,11 +131,12 @@ function renderTravelTab(travel) {
   }
 
   div.innerHTML = `
-    <select 
-  class="form-select form-select-sm d-inline-block w-auto"
-  data-travel-switcher>
-</select>
-
+    <input
+      type="text"
+      class="form-control form-control-sm d-inline-block w-auto"
+      value="${travel.destino || "Viaje"}"
+      data-travel-title
+    >
 
     <button class="btn btn-sm btn-outline-secondary" data-duplicate-travel>⧉</button>
     <button class="btn btn-sm btn-outline-success" data-add-travel>AGREGAR +</button>
@@ -107,7 +156,7 @@ document.addEventListener("click", async e => {
   const tab = e.target.closest(".travel-tab");
   const travelId = Number(tab?.dataset.travelId);
 
-  /* ================= SELECT ================= */
+  /* SELECT TAB */
   if (tab && !e.target.closest("button")) {
 
     setActiveTravelId(travelId);
@@ -120,7 +169,7 @@ document.addEventListener("click", async e => {
     document.dispatchEvent(new Event("travel-selected"));
   }
 
-  /* ================= ADD ================= */
+  /* ADD */
   if (e.target.closest("[data-add-travel]")) {
 
     const newTravel = await createTravel({
@@ -128,15 +177,12 @@ document.addEventListener("click", async e => {
       destino: "Nuevo viaje"
     });
 
-    set("cliente_nombre", cliente.nombre);
-
     setActiveTravelId(newTravel.id);
-
 
     await loadTravels();
   }
 
-  /* ================= DELETE ================= */
+  /* DELETE */
   if (e.target.closest("[data-delete-travel]") && tab) {
 
     if (!confirm("Eliminar viaje?")) return;
@@ -150,7 +196,7 @@ document.addEventListener("click", async e => {
     await loadTravels();
   }
 
-  /* ================= DUPLICATE ================= */
+  /* DUPLICATE */
   if (e.target.closest("[data-duplicate-travel]") && tab) {
 
     const title = tab.querySelector("[data-travel-title]").value;
@@ -164,7 +210,6 @@ document.addEventListener("click", async e => {
 
     await loadTravels();
   }
-
 });
 
 /************************************************
