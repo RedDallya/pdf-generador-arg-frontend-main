@@ -1,4 +1,4 @@
-import { updateTravel, getTravel } from "./api.js";
+import { updateTravel, getTravelById, getCliente } from "./api.js";
 import { appState } from "./state.js";
 
 /*************************************
@@ -10,7 +10,7 @@ async function loadTravelForm() {
 
   if (!appState.activeTravelId) return;
 
-  const travel = await getTravel(appState.activeTravelId);
+  const travel = await getTravelById(appState.activeTravelId);
 
   set("destino", travel.destino);
   set("fecha_inicio", travel.fecha_inicio);
@@ -19,7 +19,33 @@ async function loadTravelForm() {
   set("tipo_viaje", travel.tipo_viaje);
   set("estado", travel.estado);
   set("notas", travel.notas);
+
+  await fillClientAssociated(travel.cliente_id);
 }
+
+/*************************************
+SINCRONIZAR CLIENTE
+*************************************/
+async function fillClientAssociated(clienteId) {
+
+  if (!clienteId) return;
+
+  const cliente = await getCliente(clienteId);
+
+  set("cliente_nombre", cliente.nombre);
+}
+
+/*************************************
+CLIENTE CAMBIADO
+*************************************/
+document.addEventListener("client-selected", async () => {
+
+  if (!appState.activeClientId) return;
+
+  const cliente = await getCliente(appState.activeClientId);
+
+  set("cliente_nombre", cliente.nombre);
+});
 
 /*************************************
 GUARDAR FORMULARIO
@@ -56,19 +82,3 @@ function set(key,value) {
   const el = document.querySelector(`[data-travel="${key}"]`);
   if (el) el.value = value || "";
 }
-
-
-import { getCliente } from "./api.js";
-
-async function fillClientAssociated() {
-
-  if (!appState.activeClientId) return;
-
-  const cliente = await getCliente(appState.activeClientId);
-
-  const input = document.querySelector('[data-travel="cliente_nombre"]');
-
-  if (input) input.value = cliente.nombre;
-}
-
-document.addEventListener("client-selected", fillClientAssociated);

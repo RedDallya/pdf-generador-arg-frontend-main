@@ -137,3 +137,7 @@ export function getPdfs(cotizacionId) {
 export function getPdfSections(cotizacionId) {
   return fetchJSON(`/api/pdf-sections/${cotizacionId}`);
 }
+
+export function getTravelById(id) {
+  return fetchJSON(`/api/viajes/${id}`);
+}
