@@ -11,7 +11,6 @@ export async function loadClients() {
   const clients = await res.json();
 
   const select = qs("[data-client-select]");
-
   select.innerHTML = `<option value="">Seleccionar cliente</option>`;
 
   clients.forEach(c => {
@@ -20,8 +19,9 @@ export async function loadClients() {
     opt.textContent = c.nombre;
     select.appendChild(opt);
   });
-
 }
+
+document.addEventListener("DOMContentLoaded", loadClients);
 
 /********************************
 SELECT CLIENTE
@@ -69,12 +69,20 @@ document.addEventListener("click", async e => {
     }
   );
 
+  if (!res.ok) {
+    alert("Error guardando cliente");
+    return;
+  }
+
   const saved = await res.json();
 
   setActiveClientId(saved.id);
 
   await loadClients();
 
+  qs("[data-client-select]").value = saved.id;
+
+  fillClientForm(saved);
 });
 
 /********************************
@@ -94,7 +102,6 @@ document.addEventListener("click", async e => {
   setActiveClientId(null);
   clearClientForm();
   loadClients();
-
 });
 
 /********************************

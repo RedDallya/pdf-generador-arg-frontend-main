@@ -1,6 +1,11 @@
 import { appState } from "./state.js";
 import { loadState } from "./storage.js";
 import { createEmptyTravel } from "./travels.js";
+import "./clients.js";
+
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("APP cargada");
+});
 
 // Inicializadores de módulos
 import "./clients.js";
