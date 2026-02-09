@@ -13,17 +13,34 @@ export async function loadTravels() {
 
   if (!appState.activeClientId) return;
 
-  const travels = await getTravelsByClient(appState.activeClientId);
-
   const container = document.querySelector("[data-travel-tabs]");
   if (!container) return;
 
   container.innerHTML = "";
 
+  let travels = [];
+
+  try {
+    travels = await getTravelsByClient(appState.activeClientId);
+  } catch (err) {
+    console.error(err);
+  }
+
+  /* ============================
+     SIN VIAJES → TAB VACÍO
+  ============================ */
   if (!travels.length) {
+
     setActiveTravelId(null);
+
+    renderEmptyTravelTab();
+
     return;
   }
+
+  /* ============================
+     CON VIAJES
+  ============================ */
 
   travels.forEach(renderTravelTab);
 
@@ -136,3 +153,28 @@ document.addEventListener("click", async e => {
     await loadTravels();
   }
 });
+
+
+function renderEmptyTravelTab() {
+
+  const container = document.querySelector("[data-travel-tabs]");
+
+  const div = document.createElement("div");
+
+  div.className = "travel-tab";
+
+  div.innerHTML = `
+    <input
+      type="text"
+      class="form-control form-control-sm d-inline-block w-auto"
+      placeholder="Nuevo viaje"
+      disabled
+    >
+
+    <button class="btn btn-sm btn-outline-success" data-add-travel>
+      AGREGAR +
+    </button>
+  `;
+
+  container.appendChild(div);
+}
