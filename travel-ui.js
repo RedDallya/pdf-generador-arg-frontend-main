@@ -1,30 +1,4 @@
-import { appState } from "./state.js";
-
-export function createEmptyTravel() {
-  return {
-    client: { id: null, data: null },
-    basic: {},
-    sections: {
-      cotizaciones: {
-        enabled: false,
-        categorias: {
-          hotel: { enabled: false, servicios: [] },
-          aereo: { enabled: false, servicios: [] }
-        }
-      },
-      operadores: { enabled: false },
-      vouchers: { enabled: false },
-      itinerario: { enabled: false }
-    }
-  };
-}
-
-
-
-function getActiveTravel() {
-  return appState.travels[appState.activeTravelId];
-}
-
+// travel-ui.js
 
 document.addEventListener("change", e => {
   const toggle = e.target.closest("[data-toggle]");
@@ -35,14 +9,7 @@ document.addEventListener("change", e => {
   if (!body) return;
 
   body.classList.toggle("hidden", !toggle.checked);
-
-  const travel = getActiveTravel();
-  if (travel?.sections?.[section.dataset.section]) {
-    travel.sections[section.dataset.section].enabled = toggle.checked;
-    saveState();
-  }
 });
-
 
 document.addEventListener("change", e => {
   const toggle = e.target.closest("[data-category-toggle]");
@@ -53,17 +20,7 @@ document.addEventListener("change", e => {
   if (!body) return;
 
   body.classList.toggle("hidden", !toggle.checked);
-
-  const travel = getActiveTravel();
-  const key = category.dataset.category;
-
-  if (travel?.sections?.cotizaciones?.categorias?.[key]) {
-    travel.sections.cotizaciones.categorias[key].enabled = toggle.checked;
-    saveState();
-  }
 });
-
-
 
 document.addEventListener("click", e => {
   const btn = e.target.closest("[data-travel-tab]");
@@ -81,4 +38,3 @@ document.addEventListener("click", e => {
   document.querySelector(`[data-section="${tab}"]`)
     ?.classList.remove("hidden");
 });
-
