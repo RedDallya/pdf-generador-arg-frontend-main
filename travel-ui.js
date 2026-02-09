@@ -1,16 +1,18 @@
-import { updateTravel, getTravelById, getCliente } from "./api.js";
+import { updateTravel, getTravel, getCliente } from "./api.js";
 import { appState } from "./state.js";
 
 /*************************************
-CARGAR FORMULARIO
-*************************************/
+ * CARGAR FORMULARIO AL SELECCIONAR VIAJE
+ *************************************/
 document.addEventListener("travel-selected", loadTravelForm);
 
 async function loadTravelForm() {
 
   if (!appState.activeTravelId) return;
 
-  const travel = await getTravelById(appState.activeTravelId);
+  const travel = await getTravel(appState.activeTravelId);
+
+  if (!travel) return;
 
   set("destino", travel.destino);
   set("fecha_inicio", travel.fecha_inicio);
@@ -20,36 +22,49 @@ async function loadTravelForm() {
   set("estado", travel.estado);
   set("notas", travel.notas);
 
-  await fillClientAssociated(travel.cliente_id);
+  /* cliente asociado */
+  if (travel.cliente_id) {
+    await fillClientAssociated(travel.cliente_id);
+  }
 }
 
 /*************************************
-SINCRONIZAR CLIENTE
-*************************************/
+ * SINCRONIZAR CLIENTE ASOCIADO
+ *************************************/
 async function fillClientAssociated(clienteId) {
 
-  if (!clienteId) return;
+  if (!clienteId) {
+    set("cliente_nombre", "");
+    return;
+  }
 
   const cliente = await getCliente(clienteId);
 
-  set("cliente_nombre", cliente.nombre);
+  if (cliente) {
+    set("cliente_nombre", cliente.nombre);
+  }
 }
 
 /*************************************
-CLIENTE CAMBIADO
-*************************************/
+ * CLIENTE CAMBIADO DESDE SECCIÓN CLIENTE
+ *************************************/
 document.addEventListener("client-selected", async () => {
 
-  if (!appState.activeClientId) return;
+  if (!appState.activeClientId) {
+    set("cliente_nombre", "");
+    return;
+  }
 
   const cliente = await getCliente(appState.activeClientId);
 
-  set("cliente_nombre", cliente.nombre);
+  if (cliente) {
+    set("cliente_nombre", cliente.nombre);
+  }
 });
 
 /*************************************
-GUARDAR FORMULARIO
-*************************************/
+ * GUARDAR FORMULARIO VIAJE
+ *************************************/
 document.addEventListener("click", async e => {
 
   if (!e.target.closest("[data-travel-save]")) return;
@@ -67,20 +82,21 @@ document.addEventListener("click", async e => {
   };
 
   await updateTravel(appState.activeTravelId, payload);
-  document.dispatchEvent(new Event("travel-saved"));
 
+  /* refrescar tabs */
+  document.dispatchEvent(new Event("travel-saved"));
 
   alert("Viaje guardado");
 });
 
 /*************************************
-HELPERS
-*************************************/
+ * HELPERS
+ *************************************/
 function val(key) {
   return document.querySelector(`[data-travel="${key}"]`)?.value || null;
 }
 
-function set(key,value) {
+function set(key, value) {
   const el = document.querySelector(`[data-travel="${key}"]`);
-  if (el) el.value = value || "";
+  if (el) el.value = value ?? "";
 }
