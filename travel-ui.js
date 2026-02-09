@@ -1,5 +1,4 @@
 import { updateTravel, getTravelById, getCliente } from "./api.js";
-
 import { appState } from "./state.js";
 
 /*************************************
@@ -15,10 +14,15 @@ async function loadTravelForm() {
 
   try {
 
-    const travel = await getTravelById(appState.activeTravelId);
+    const travelId = appState.activeTravelId;
 
+    const travel = await getTravelById(travelId);
+
+    /* protección race condition */
+    if (travelId !== appState.activeTravelId) return;
     if (!travel) return;
 
+    set("nombre", travel.nombre);
     set("destino", travel.destino);
     set("fecha_inicio", travel.fecha_inicio);
     set("fecha_fin", travel.fecha_fin);
@@ -47,6 +51,7 @@ async function fillClientAssociated(clienteId) {
   try {
 
     const cliente = await getCliente(clienteId);
+
     if (cliente) {
       set("cliente_nombre", cliente.nombre);
     }
@@ -55,31 +60,6 @@ async function fillClientAssociated(clienteId) {
     console.error("Error cargando cliente asociado", err);
   }
 }
-
-/*************************************
- * CLIENTE CAMBIADO DESDE SECCIÓN CLIENTE
- *************************************/
-document.addEventListener("client-selected", async () => {
-
-  clearTravelForm();
-
-  if (!appState.activeClientId) {
-    set("cliente_nombre", "");
-    return;
-  }
-
-  try {
-
-    const cliente = await getCliente(appState.activeClientId);
-    if (cliente) {
-      set("cliente_nombre", cliente.nombre);
-    }
-
-  } catch (err) {
-    console.error("Error sincronizando cliente", err);
-  }
-
-});
 
 /*************************************
  * GUARDAR FORMULARIO VIAJE
@@ -93,6 +73,7 @@ document.addEventListener("click", async e => {
 
     const payload = {
       cliente_id: appState.activeClientId,
+      nombre: val("nombre"),
       destino: val("destino"),
       fecha_inicio: val("fecha_inicio"),
       fecha_fin: val("fecha_fin"),
@@ -111,7 +92,6 @@ document.addEventListener("click", async e => {
   } catch (err) {
     console.error("Error guardando viaje", err);
   }
-
 });
 
 /*************************************
@@ -135,9 +115,9 @@ export function clearTravelForm() {
     el.value = "";
   });
 
-  // limpiar cliente asociado SI existe
-  const clientField = document.querySelector('[data-travel="cliente_nombre"]');
-  if (clientField) clientField.value = "";
 }
 
+/*************************************
+ * LIMPIAR CUANDO NO HAY VIAJE
+ *************************************/
 document.addEventListener("travel-cleared", clearTravelForm);
