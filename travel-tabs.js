@@ -8,24 +8,40 @@ import {
 import { appState, setActiveTravelId } from "./state.js";
 
 /************************************************
- LOAD TRAVELS (por cliente)
+LOAD TRAVELS
 *************************************************/
 export async function loadTravels() {
 
   if (!appState.activeClientId) return;
 
-  const travels = await getTravelsByClient(appState.activeClientId);
+  try {
 
-  const container = document.querySelector("[data-travel-tabs]");
-  if (!container) return;
+    const travels = await getTravelsByClient(appState.activeClientId);
 
-  container.innerHTML = "";
+    const container = document.querySelector("[data-travel-tabs]");
+    if (!container) return;
 
-  travels.forEach(travel => renderTravelTab(travel));
+    container.innerHTML = "";
+
+    if (!travels.length) {
+      setActiveTravelId(null);
+      return;
+    }
+
+    travels.forEach(t => renderTravelTab(t));
+
+    /* Si no hay activo → tomar el primero */
+    if (!appState.activeTravelId) {
+      setActiveTravelId(travels[0].id);
+    }
+
+  } catch (err) {
+    console.error("Error cargando viajes", err);
+  }
 }
 
 /************************************************
- RENDER TAB
+RENDER TAB
 *************************************************/
 function renderTravelTab(travel) {
 
@@ -37,7 +53,7 @@ function renderTravelTab(travel) {
   div.className = "travel-tab";
   div.dataset.travelId = travel.id;
 
-  if (travel.id === appState.activeTravelId) {
+  if (Number(travel.id) === Number(appState.activeTravelId)) {
     div.classList.add("active");
   }
 
@@ -70,22 +86,20 @@ function renderTravelTab(travel) {
 }
 
 /************************************************
- GLOBAL CLICK HANDLER
+GLOBAL CLICK HANDLER
 *************************************************/
 document.addEventListener("click", async e => {
 
-  if (!appState.activeClientId) {
-    alert("Seleccioná un cliente primero");
-    return;
-  }
+  if (!appState.activeClientId) return;
 
   const tab = e.target.closest(".travel-tab");
-  const travelId = tab?.dataset.travelId;
+  const travelId = tab ? Number(tab.dataset.travelId) : null;
 
   /* ===============================
      SELECCIONAR VIAJE
   =============================== */
   if (tab && !e.target.closest("button")) {
+
     setActiveTravelId(travelId);
 
     document.querySelectorAll(".travel-tab")
@@ -99,12 +113,20 @@ document.addEventListener("click", async e => {
   =============================== */
   if (e.target.closest("[data-add-travel]")) {
 
-    await createTravel({
-      cliente_id: appState.activeClientId,
-      destino: "Nuevo viaje"
-    });
+    try {
 
-    await loadTravels();
+      const newTravel = await createTravel({
+        cliente_id: appState.activeClientId,
+        destino: "Nuevo viaje"
+      });
+
+      setActiveTravelId(newTravel.id);
+
+      await loadTravels();
+
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   /* ===============================
@@ -112,14 +134,20 @@ document.addEventListener("click", async e => {
   =============================== */
   if (e.target.closest("[data-save-travel]") && tab) {
 
-    const title = tab.querySelector("[data-travel-title]").value;
+    try {
 
-    await updateTravel(travelId, {
-      cliente_id: appState.activeClientId,
-      destino: title
-    });
+      const title = tab.querySelector("[data-travel-title]").value;
 
-    alert("Viaje guardado");
+      await updateTravel(travelId, {
+        cliente_id: appState.activeClientId,
+        destino: title
+      });
+
+      alert("Viaje guardado");
+
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   /* ===============================
@@ -129,13 +157,19 @@ document.addEventListener("click", async e => {
 
     if (!confirm("Eliminar viaje?")) return;
 
-    await deleteTravel(travelId);
+    try {
 
-    if (appState.activeTravelId === travelId) {
-      setActiveTravelId(null);
+      await deleteTravel(travelId);
+
+      if (Number(appState.activeTravelId) === travelId) {
+        setActiveTravelId(null);
+      }
+
+      await loadTravels();
+
+    } catch (err) {
+      console.error(err);
     }
-
-    await loadTravels();
   }
 
   /* ===============================
@@ -143,14 +177,22 @@ document.addEventListener("click", async e => {
   =============================== */
   if (e.target.closest("[data-duplicate-travel]") && tab) {
 
-    const title = tab.querySelector("[data-travel-title]").value;
+    try {
 
-    await createTravel({
-      cliente_id: appState.activeClientId,
-      destino: `${title} copia`
-    });
+      const title = tab.querySelector("[data-travel-title]").value;
 
-    await loadTravels();
+      const newTravel = await createTravel({
+        cliente_id: appState.activeClientId,
+        destino: `${title} copia`
+      });
+
+      setActiveTravelId(newTravel.id);
+
+      await loadTravels();
+
+    } catch (err) {
+      console.error(err);
+    }
   }
 
 });
