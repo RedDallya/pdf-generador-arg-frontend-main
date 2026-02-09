@@ -1,91 +1,58 @@
-import { getTravelById, updateTravel } from "./api.js";
+import { updateTravel, getTravel } from "./api.js";
 import { appState } from "./state.js";
 
-/************************************************
-CARGAR VIAJE EN FORMULARIO
-*************************************************/
-export async function hydrateTravelForm() {
+/*************************************
+CARGAR FORMULARIO
+*************************************/
+document.addEventListener("travel-selected", loadTravelForm);
+
+async function loadTravelForm() {
 
   if (!appState.activeTravelId) return;
 
-  try {
+  const travel = await getTravel(appState.activeTravelId);
 
-    const travel = await getTravelById(appState.activeTravelId);
-
-    if (!travel) return;
-
-    setField("destino", travel.destino);
-    setField("fecha_inicio", travel.fecha_inicio);
-    setField("fecha_fin", travel.fecha_fin);
-    setField("pasajero", travel.pasajero);
-    setField("tipo_viaje", travel.tipo_viaje);
-    setField("estado", travel.estado);
-    setField("notas", travel.notas);
-
-  } catch (err) {
-    console.error("Error cargando viaje", err);
-  }
+  set("destino", travel.destino);
+  set("fecha_inicio", travel.fecha_inicio);
+  set("fecha_fin", travel.fecha_fin);
+  set("pasajero", travel.pasajero);
+  set("tipo_viaje", travel.tipo_viaje);
+  set("estado", travel.estado);
+  set("notas", travel.notas);
 }
 
-/************************************************
-AUTO SAVE AL CAMBIAR INPUT
-*************************************************/
-document.addEventListener("change", async e => {
+/*************************************
+GUARDAR FORMULARIO
+*************************************/
+document.addEventListener("click", async e => {
 
-  const input = e.target.closest("[data-travel]");
-  if (!input) return;
-
+  if (!e.target.closest("[data-travel-save]")) return;
   if (!appState.activeTravelId) return;
 
-  try {
+  const payload = {
+    cliente_id: appState.activeClientId,
+    destino: val("destino"),
+    fecha_inicio: val("fecha_inicio"),
+    fecha_fin: val("fecha_fin"),
+    pasajero: val("pasajero"),
+    tipo_viaje: val("tipo_viaje"),
+    estado: val("estado"),
+    notas: val("notas")
+  };
 
-    const payload = {
-      [input.dataset.travel]: input.value
-    };
+  await updateTravel(appState.activeTravelId, payload);
 
-    await updateTravel(appState.activeTravelId, payload);
-
-  } catch (err) {
-    console.error("Error guardando campo viaje", err);
-  }
-
+  alert("Viaje guardado");
 });
 
-/************************************************
-TOGGLES SECCIONES (solo UI)
-*************************************************/
-document.addEventListener("change", e => {
-
-  const toggle = e.target.closest("[data-toggle]");
-  if (!toggle) return;
-
-  const section = toggle.closest("[data-section]");
-  const body = section?.querySelector(".section-body");
-  if (!body) return;
-
-  body.classList.toggle("hidden", !toggle.checked);
-
-});
-
-document.addEventListener("change", e => {
-
-  const toggle = e.target.closest("[data-category-toggle]");
-  if (!toggle) return;
-
-  const category = toggle.closest("[data-category]");
-  const body = category?.querySelector(".category-body");
-  if (!body) return;
-
-  body.classList.toggle("hidden", !toggle.checked);
-
-});
-
-/************************************************
+/*************************************
 HELPERS
-*************************************************/
-function setField(key, value) {
+*************************************/
+function val(key) {
+  return document.querySelector(`[data-travel="${key}"]`)?.value || null;
+}
 
+function set(key,value) {
   const el = document.querySelector(`[data-travel="${key}"]`);
   if (el) el.value = value || "";
-
 }

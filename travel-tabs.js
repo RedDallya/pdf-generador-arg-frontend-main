@@ -1,52 +1,37 @@
 import {
   getTravelsByClient,
   createTravel,
-  updateTravel,
   deleteTravel
 } from "./api.js";
 
 import { appState, setActiveTravelId } from "./state.js";
 
-/************************************************
-LOAD TRAVELS
-*************************************************/
 export async function loadTravels() {
 
   if (!appState.activeClientId) return;
 
-  try {
-
-    const travels = await getTravelsByClient(appState.activeClientId);
-
-    const container = document.querySelector("[data-travel-tabs]");
-    if (!container) return;
-
-    container.innerHTML = "";
-
-    if (!travels.length) {
-      setActiveTravelId(null);
-      return;
-    }
-
-    travels.forEach(t => renderTravelTab(t));
-
-    /* Si no hay activo → tomar el primero */
-    if (!appState.activeTravelId) {
-      setActiveTravelId(travels[0].id);
-    }
-
-  } catch (err) {
-    console.error("Error cargando viajes", err);
-  }
-}
-
-/************************************************
-RENDER TAB
-*************************************************/
-function renderTravelTab(travel) {
+  const travels = await getTravelsByClient(appState.activeClientId);
 
   const container = document.querySelector("[data-travel-tabs]");
   if (!container) return;
+
+  container.innerHTML = "";
+
+  if (!travels.length) {
+    setActiveTravelId(null);
+    return;
+  }
+
+  travels.forEach(renderTravelTab);
+
+  if (!appState.activeTravelId) {
+    setActiveTravelId(travels[0].id);
+  }
+}
+
+function renderTravelTab(travel) {
+
+  const container = document.querySelector("[data-travel-tabs]");
 
   const div = document.createElement("div");
 
@@ -65,29 +50,14 @@ function renderTravelTab(travel) {
       data-travel-title
     >
 
-    <button type="button" class="btn btn-sm btn-outline-secondary" data-duplicate-travel>
-      ⧉
-    </button>
-
-    <button type="button" class="btn btn-sm btn-outline-success" data-add-travel>
-      AGREGAR +
-    </button>
-
-    <button type="button" class="btn btn-sm btn-outline-success" data-save-travel>
-      Guardar viaje
-    </button>
-
-    <button type="button" class="btn btn-sm btn-outline-danger" data-delete-travel>
-      ✕
-    </button>
+    <button class="btn btn-sm btn-outline-secondary" data-duplicate-travel>⧉</button>
+    <button class="btn btn-sm btn-outline-success" data-add-travel>AGREGAR +</button>
+    <button class="btn btn-sm btn-outline-danger" data-delete-travel>✕</button>
   `;
 
   container.appendChild(div);
 }
 
-/************************************************
-GLOBAL CLICK HANDLER
-*************************************************/
 document.addEventListener("click", async e => {
 
   if (!appState.activeClientId) return;
@@ -95,10 +65,7 @@ document.addEventListener("click", async e => {
   const tab = e.target.closest(".travel-tab");
   const travelId = Number(tab?.dataset.travelId);
 
-
-  /* ===============================
-     SELECCIONAR VIAJE
-  =============================== */
+  /* SELECCIONAR */
   if (tab && !e.target.closest("button")) {
 
     setActiveTravelId(travelId);
@@ -107,93 +74,45 @@ document.addEventListener("click", async e => {
       .forEach(t => t.classList.remove("active"));
 
     tab.classList.add("active");
+
+    document.dispatchEvent(new Event("travel-selected"));
   }
 
-  /* ===============================
-     AGREGAR VIAJE
-  =============================== */
+  /* AGREGAR */
   if (e.target.closest("[data-add-travel]")) {
 
-    try {
+    const newTravel = await createTravel({
+      cliente_id: appState.activeClientId,
+      destino: "Nuevo viaje"
+    });
 
-      const newTravel = await createTravel({
-        cliente_id: appState.activeClientId,
-        destino: "Nuevo viaje"
-      });
+    setActiveTravelId(newTravel.id);
 
-      setActiveTravelId(newTravel.id);
-
-      await loadTravels();
-
-    } catch (err) {
-      console.error(err);
-    }
+    await loadTravels();
   }
 
-  /* ===============================
-     GUARDAR VIAJE
-  =============================== */
-  if (e.target.closest("[data-save-travel]") && tab) {
-
-    try {
-
-      const title = tab.querySelector("[data-travel-title]").value;
-
-      await updateTravel(travelId, {
-        cliente_id: appState.activeClientId,
-        destino: title
-      });
-
-      alert("Viaje guardado");
-
-    } catch (err) {
-      console.error(err);
-    }
-  }
-
-  /* ===============================
-     ELIMINAR VIAJE
-  =============================== */
+  /* ELIMINAR */
   if (e.target.closest("[data-delete-travel]") && tab) {
 
     if (!confirm("Eliminar viaje?")) return;
 
-    try {
+    await deleteTravel(travelId);
 
-      await deleteTravel(travelId);
-
-      if (Number(appState.activeTravelId) === travelId) {
-        setActiveTravelId(null);
-      }
-
-      await loadTravels();
-
-    } catch (err) {
-      console.error(err);
-    }
+    await loadTravels();
   }
 
-  /* ===============================
-     DUPLICAR VIAJE
-  =============================== */
+  /* DUPLICAR */
   if (e.target.closest("[data-duplicate-travel]") && tab) {
 
-    try {
+    const title = tab.querySelector("[data-travel-title]").value;
 
-      const title = tab.querySelector("[data-travel-title]").value;
+    const newTravel = await createTravel({
+      cliente_id: appState.activeClientId,
+      destino: `${title} copia`
+    });
 
-      const newTravel = await createTravel({
-        cliente_id: appState.activeClientId,
-        destino: `${title} copia`
-      });
+    setActiveTravelId(newTravel.id);
 
-      setActiveTravelId(newTravel.id);
-
-      await loadTravels();
-
-    } catch (err) {
-      console.error(err);
-    }
+    await loadTravels();
   }
-
 });
