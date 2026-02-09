@@ -83,12 +83,11 @@ function renderTravelTab(travel) {
   }
 
   div.innerHTML = `
-    <input
-      type="text"
-      class="form-control form-control-sm d-inline-block w-auto"
-      value="${travel.destino || "Viaje"}"
-      data-travel-title
-    >
+    <select 
+  class="form-select form-select-sm d-inline-block w-auto"
+  data-travel-switcher>
+</select>
+
 
     <button class="btn btn-sm btn-outline-secondary" data-duplicate-travel>⧉</button>
     <button class="btn btn-sm btn-outline-success" data-add-travel>AGREGAR +</button>
@@ -129,7 +128,10 @@ document.addEventListener("click", async e => {
       destino: "Nuevo viaje"
     });
 
+    set("cliente_nombre", cliente.nombre);
+
     setActiveTravelId(newTravel.id);
+
 
     await loadTravels();
   }
