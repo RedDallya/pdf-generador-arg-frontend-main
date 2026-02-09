@@ -72,11 +72,16 @@ document.addEventListener("click", async e => {
   if (e.target.closest("[data-client-save]")) {
 
     const payload = {
-      nombre: val("name"),
-      telefono: val("phone"),
-      email: val("email"),
-      notas: val("notes")
-    };
+  nombre: val("name"),
+  telefono: val("phone"),
+  email: val("email"),
+  notas: val("notes"),
+  status: val("status"),
+  location: val("location"),
+  tags: val("tags"),
+  created_at: val("created")
+};
+
 
     const res = await fetch(
       activeClientId
