@@ -1,9 +1,13 @@
 export const appState = {
   activeClientId: null,
-  activeTravelId: "travel_1",
-  travels: {}
+  activeTravelId: null
 };
 
 export function setActiveClientId(id) {
   appState.activeClientId = id;
+  appState.activeTravelId = null;
+}
+
+export function setActiveTravelId(id) {
+  appState.activeTravelId = id;
 }

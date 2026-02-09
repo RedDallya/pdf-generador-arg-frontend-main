@@ -1,5 +1,6 @@
 import { appState } from "./state.js";
 import { createEmptyTravel } from "./travels.js";
+import "./travel-tabs.js";
 
 /* MODULOS */
 import "./clients.js";
