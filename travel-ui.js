@@ -8,23 +8,27 @@ document.addEventListener("travel-selected", loadTravelForm);
 
 async function loadTravelForm() {
 
+  clearTravelForm();
+
   if (!appState.activeTravelId) return;
 
-  const travel = await getTravel(appState.activeTravelId);
+  try {
 
-  if (!travel) return;
+    const travel = await getTravel(appState.activeTravelId);
+    if (!travel) return;
 
-  set("destino", travel.destino);
-  set("fecha_inicio", travel.fecha_inicio);
-  set("fecha_fin", travel.fecha_fin);
-  set("pasajero", travel.pasajero);
-  set("tipo_viaje", travel.tipo_viaje);
-  set("estado", travel.estado);
-  set("notas", travel.notas);
+    set("destino", travel.destino);
+    set("fecha_inicio", travel.fecha_inicio);
+    set("fecha_fin", travel.fecha_fin);
+    set("pasajero", travel.pasajero);
+    set("tipo_viaje", travel.tipo_viaje);
+    set("estado", travel.estado);
+    set("notas", travel.notas);
 
-  /* cliente asociado */
-  if (travel.cliente_id) {
     await fillClientAssociated(travel.cliente_id);
+
+  } catch (err) {
+    console.error("Error cargando viaje", err);
   }
 }
 
@@ -38,10 +42,15 @@ async function fillClientAssociated(clienteId) {
     return;
   }
 
-  const cliente = await getCliente(clienteId);
+  try {
 
-  if (cliente) {
-    set("cliente_nombre", cliente.nombre);
+    const cliente = await getCliente(clienteId);
+    if (cliente) {
+      set("cliente_nombre", cliente.nombre);
+    }
+
+  } catch (err) {
+    console.error("Error cargando cliente asociado", err);
   }
 }
 
@@ -50,16 +59,24 @@ async function fillClientAssociated(clienteId) {
  *************************************/
 document.addEventListener("client-selected", async () => {
 
+  clearTravelForm();
+
   if (!appState.activeClientId) {
     set("cliente_nombre", "");
     return;
   }
 
-  const cliente = await getCliente(appState.activeClientId);
+  try {
 
-  if (cliente) {
-    set("cliente_nombre", cliente.nombre);
+    const cliente = await getCliente(appState.activeClientId);
+    if (cliente) {
+      set("cliente_nombre", cliente.nombre);
+    }
+
+  } catch (err) {
+    console.error("Error sincronizando cliente", err);
   }
+
 });
 
 /*************************************
@@ -70,23 +87,29 @@ document.addEventListener("click", async e => {
   if (!e.target.closest("[data-travel-save]")) return;
   if (!appState.activeTravelId) return;
 
-  const payload = {
-    cliente_id: appState.activeClientId,
-    destino: val("destino"),
-    fecha_inicio: val("fecha_inicio"),
-    fecha_fin: val("fecha_fin"),
-    pasajero: val("pasajero"),
-    tipo_viaje: val("tipo_viaje"),
-    estado: val("estado"),
-    notas: val("notas")
-  };
+  try {
 
-  await updateTravel(appState.activeTravelId, payload);
+    const payload = {
+      cliente_id: appState.activeClientId,
+      destino: val("destino"),
+      fecha_inicio: val("fecha_inicio"),
+      fecha_fin: val("fecha_fin"),
+      pasajero: val("pasajero"),
+      tipo_viaje: val("tipo_viaje"),
+      estado: val("estado"),
+      notas: val("notas")
+    };
 
-  /* refrescar tabs */
-  document.dispatchEvent(new Event("travel-saved"));
+    await updateTravel(appState.activeTravelId, payload);
 
-  alert("Viaje guardado");
+    document.dispatchEvent(new Event("travel-saved"));
+
+    alert("Viaje guardado");
+
+  } catch (err) {
+    console.error("Error guardando viaje", err);
+  }
+
 });
 
 /*************************************
@@ -101,10 +124,18 @@ function set(key, value) {
   if (el) el.value = value ?? "";
 }
 
+/*************************************
+ * LIMPIAR FORMULARIO
+ *************************************/
 export function clearTravelForm() {
 
   document.querySelectorAll("[data-travel]").forEach(el => {
     el.value = "";
   });
 
+  // limpiar cliente asociado SI existe
+  const clientField = document.querySelector('[data-travel="cliente_nombre"]');
+  if (clientField) clientField.value = "";
 }
+
+document.addEventListener("travel-cleared", clearTravelForm);

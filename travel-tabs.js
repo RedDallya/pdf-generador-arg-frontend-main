@@ -25,39 +25,45 @@ export async function loadTravels() {
   } catch (err) {
     console.error(err);
   }
-  
-document.addEventListener("travel-cleared", clearTravelForm);
 
   /* ============================
-     SIN VIAJES → TAB VACÍO
+     SIN VIAJES
   ============================ */
   if (!travels.length) {
 
-  setActiveTravelId(null);
+    setActiveTravelId(null);
 
-  document.dispatchEvent(new Event("travel-cleared"));
+    renderEmptyTravelTab();
 
-  return;
-}
+    document.dispatchEvent(new Event("travel-cleared"));
 
+    return;
+  }
 
   /* ============================
-     CON VIAJES
+     VALIDAR ACTIVE ID
+  ============================ */
+
+  const exists = travels.some(t => Number(t.id) === Number(appState.activeTravelId));
+
+  if (!exists) {
+    setActiveTravelId(travels[0].id);
+  }
+
+  /* ============================
+     RENDER
   ============================ */
 
   travels.forEach(renderTravelTab);
 
-  if (!appState.activeTravelId) {
-    setActiveTravelId(travels[0].id);
-  }
+  document.dispatchEvent(new Event("travel-selected"));
 }
 
 /************************************************
-REFRESH CUANDO SE GUARDA
+REFRESH EVENTS
 *************************************************/
 document.addEventListener("travel-saved", loadTravels);
 document.addEventListener("client-selected", loadTravels);
-
 
 /************************************************
 RENDER TAB
@@ -102,7 +108,7 @@ document.addEventListener("click", async e => {
   const tab = e.target.closest(".travel-tab");
   const travelId = Number(tab?.dataset.travelId);
 
-  /* SELECCIONAR */
+  /* ================= SELECT ================= */
   if (tab && !e.target.closest("button")) {
 
     setActiveTravelId(travelId);
@@ -115,7 +121,7 @@ document.addEventListener("click", async e => {
     document.dispatchEvent(new Event("travel-selected"));
   }
 
-  /* AGREGAR */
+  /* ================= ADD ================= */
   if (e.target.closest("[data-add-travel]")) {
 
     const newTravel = await createTravel({
@@ -125,18 +131,16 @@ document.addEventListener("click", async e => {
 
     setActiveTravelId(newTravel.id);
 
-document.dispatchEvent(new Event("travel-selected"));
-
-await loadTravels();
-
+    await loadTravels();
   }
 
-  /* ELIMINAR */
+  /* ================= DELETE ================= */
   if (e.target.closest("[data-delete-travel]") && tab) {
 
     if (!confirm("Eliminar viaje?")) return;
 
     await deleteTravel(travelId);
+
     if (Number(appState.activeTravelId) === travelId) {
       setActiveTravelId(null);
     }
@@ -144,7 +148,7 @@ await loadTravels();
     await loadTravels();
   }
 
-  /* DUPLICAR */
+  /* ================= DUPLICATE ================= */
   if (e.target.closest("[data-duplicate-travel]") && tab) {
 
     const title = tab.querySelector("[data-travel-title]").value;
@@ -158,12 +162,16 @@ await loadTravels();
 
     await loadTravels();
   }
+
 });
 
-
+/************************************************
+EMPTY TAB
+*************************************************/
 function renderEmptyTravelTab() {
 
   const container = document.querySelector("[data-travel-tabs]");
+  if (!container) return;
 
   const div = document.createElement("div");
 
