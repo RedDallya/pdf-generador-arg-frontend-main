@@ -9,6 +9,11 @@ export function setAuthToken(token) {
   authToken = token;
 }
 
+// ✅ BIEN
+export function getTravelsByClient(clientId) {
+  return fetchJSON(`/api/viajes/cliente/${clientId}`);
+}
+
 /******************************
  * HEADERS BUILDER
  ******************************/

@@ -1,7 +1,7 @@
 import { API_BASE } from "./config.js";
 import { qs, val } from "./dom.js";
 import { appState, setActiveClientId } from "./state.js";
-import { loadTravels } from "./travel-tabs.js";
+
 /********************************
 INIT
 *********************************/
@@ -43,7 +43,11 @@ document.addEventListener("change", async e => {
   const id = Number(select.value);
   setActiveClientId(id);
 
-  if (!id) return clearClientForm();
+  if (!id) {
+    clearClientForm();
+    document.dispatchEvent(new Event("client-selected"));
+    return;
+  }
 
   const res = await fetch(`${API_BASE}/api/clientes/${id}`);
   if (!res.ok) return alert("Error cargando cliente");
@@ -52,10 +56,10 @@ document.addEventListener("change", async e => {
 
   fillClientForm(client);
   loadClientDocuments(id);
-  loadTravels();
-document.dispatchEvent(new Event("client-selected"));
 
+  document.dispatchEvent(new Event("client-selected"));
 });
+
 
 /********************************
 GLOBAL CLICK HANDLER
