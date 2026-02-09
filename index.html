@@ -23,7 +23,7 @@
       <div class="section-header mb-3">
         <h2 class="mb-0">Cliente</h2>
       </div>
-      
+
       <!-- SELECT CLIENTE -->
       <div class="row g-3 mb-4">
         <div class="col-md-6">
@@ -40,12 +40,12 @@
           </span>
         </div>
         <div>
-        <button data-client-save>
-          añadir cliente
-        </button>
-        <button data-client-delete>
-          borrar cliente
-        </button>
+          <button data-client-new>
+            añadir cliente
+          </button>
+          <button data-client-delete>
+            borrar cliente
+          </button>
         </div>
       </div>
       <!-- NAV CLIENTE -->
@@ -194,7 +194,7 @@
         <button type="button" class="btn btn-sm btn-outline-success" data-add-travel>
           AGREGAR +
         </button>
-<button type="button" class="btn btn-sm btn-outline-success" data-add-travel>
+        <button type="button" class="btn btn-sm btn-outline-success" data-add-travel>
           guardar viaje
         </button>
         <button type="button" class="btn btn-sm btn-outline-danger" data-delete-travel>
@@ -663,6 +663,7 @@
   <!-- JS -->
   <script type="module" src="api.js"></script>
   <script type="module" src="app.js"></script>
+  <script type="module" src="clients.js"></script>
 
   <!-- TEMPLATE SERVICIO -->
   <template id="service-template">
@@ -766,23 +767,23 @@
   <template id="pdf-item-template">
     <div class="pdf-list mt-3" data-pdf-list>
 
-    <div class="pdf-item border rounded p-3 mb-2 d-flex justify-content-between align-items-center">
+      <div class="pdf-item border rounded p-3 mb-2 d-flex justify-content-between align-items-center">
 
-      <div>
-        <strong data-pdf-name></strong>
-        <div class="small text-muted" data-pdf-meta></div>
-      </div>
+        <div>
+          <strong data-pdf-name></strong>
+          <div class="small text-muted" data-pdf-meta></div>
+        </div>
 
-      <div class="d-flex gap-2">
-        <button class="btn btn-sm btn-outline-secondary" data-pdf-view>Ver</button>
-        <button class="btn btn-sm btn-outline-primary" data-pdf-download>Descargar</button>
-        <button class="btn btn-sm btn-outline-warning" data-pdf-replace>Reemplazar</button>
-        <button class="btn btn-sm btn-outline-danger" data-pdf-delete>Eliminar</button>
-        <button class="btn btn-sm btn-outline-success" data-pdf-whatsapp>WhatsApp</button>
-        <button class="btn btn-sm btn-outline-dark" data-pdf-email>Email</button>
+        <div class="d-flex gap-2">
+          <button class="btn btn-sm btn-outline-secondary" data-pdf-view>Ver</button>
+          <button class="btn btn-sm btn-outline-primary" data-pdf-download>Descargar</button>
+          <button class="btn btn-sm btn-outline-warning" data-pdf-replace>Reemplazar</button>
+          <button class="btn btn-sm btn-outline-danger" data-pdf-delete>Eliminar</button>
+          <button class="btn btn-sm btn-outline-success" data-pdf-whatsapp>WhatsApp</button>
+          <button class="btn btn-sm btn-outline-dark" data-pdf-email>Email</button>
+        </div>
       </div>
     </div>
-  </div>
   </template>
 
 
