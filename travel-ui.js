@@ -1,4 +1,5 @@
-import { updateTravel, getTravel, getCliente } from "./api.js";
+import { updateTravel, getTravelById, getCliente } from "./api.js";
+
 import { appState } from "./state.js";
 
 /*************************************
@@ -14,7 +15,8 @@ async function loadTravelForm() {
 
   try {
 
-    const travel = await getTravel(appState.activeTravelId);
+    const travel = await getTravelById(appState.activeTravelId);
+
     if (!travel) return;
 
     set("destino", travel.destino);
