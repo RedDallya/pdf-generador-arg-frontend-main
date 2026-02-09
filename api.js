@@ -9,11 +9,6 @@ export function setAuthToken(token) {
   authToken = token;
 }
 
-// ✅ BIEN
-export function getTravelsByClient(clientId) {
-  return fetchJSON(`/api/viajes/cliente/${clientId}`);
-}
-
 /******************************
  * HEADERS BUILDER
  ******************************/
@@ -47,7 +42,21 @@ export async function fetchJSON(endpoint, options = {}) {
   return res.json();
 }
 
+/******************************
+ * VIAJES
+ ******************************/
 
+/** Lista viajes por cliente */
+export function getTravelsByClient(clientId) {
+  return fetchJSON(`/api/viajes/cliente/${clientId}`);
+}
+
+/** Obtener un viaje puntual */
+export function getTravel(id) {
+  return fetchJSON(`/api/viajes/${id}`);
+}
+
+/** Crear viaje */
 export function createTravel(data) {
   return fetchJSON("/api/viajes", {
     method: "POST",
@@ -55,6 +64,7 @@ export function createTravel(data) {
   });
 }
 
+/** Actualizar viaje */
 export function updateTravel(id, data) {
   return fetchJSON(`/api/viajes/${id}`, {
     method: "PUT",
@@ -62,12 +72,12 @@ export function updateTravel(id, data) {
   });
 }
 
+/** Eliminar viaje */
 export function deleteTravel(id) {
   return fetchJSON(`/api/viajes/${id}`, {
     method: "DELETE"
   });
 }
-
 
 /******************************
  * CLIENTES
@@ -109,10 +119,14 @@ export function getClientDocuments(clientId) {
   return fetchJSON(`/api/client-documents/${clientId}`);
 }
 
-export function createClientDocument(data) {
-  return fetchJSON("/api/client-documents", {
+/** ⚠️ OJO: documentos con archivo se envían con FormData (NO JSON) */
+export function createClientDocument(formData) {
+  return fetch(`${API_BASE}/api/client-documents`, {
     method: "POST",
-    body: JSON.stringify(data)
+    body: formData
+  }).then(res => {
+    if (!res.ok) throw new Error("Error subiendo documento");
+    return res.json();
   });
 }
 
@@ -133,8 +147,4 @@ export function getPdfs(cotizacionId) {
 
 export function getPdfSections(cotizacionId) {
   return fetchJSON(`/api/pdf-sections/${cotizacionId}`);
-}
-
-export function getTravelById(id) {
-  return fetchJSON(`/api/viajes/${id}`);
 }
