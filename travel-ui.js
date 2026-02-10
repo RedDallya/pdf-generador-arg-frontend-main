@@ -24,16 +24,16 @@ async function loadTravelForm() {
 
     set("nombre", travel.nombre);
     set("destino", travel.destino);
-    set("fecha_inicio", travel.fecha_inicio);
-    set("fecha_fin", travel.fecha_fin);
+    set("fecha_inicio", formatDateForInput(travel.fecha_inicio));
+    set("fecha_fin", formatDateForInput(travel.fecha_fin));
     set("pasajero", travel.pasajero);
     set("tipo_viaje", travel.tipo_viaje);
     set("estado", travel.estado);
     set("notas", travel.notas);
 
     console.log("TRAVEL:", travel);
-console.log("cliente_id:", travel.cliente_id);
-console.log("activeClientId:", appState.activeClientId);
+    console.log("cliente_id:", travel.cliente_id);
+    console.log("activeClientId:", appState.activeClientId);
 
     await fillClientAssociated(travel.cliente_id || appState.activeClientId);
 
@@ -73,10 +73,10 @@ document.addEventListener("click", async e => {
   if (!e.target.closest("[data-travel-save]")) return;
   if (!appState.activeTravelId) return;
 
-if (!appState.activeClientId) {
-  alert("Seleccioná un cliente antes de guardar el viaje");
-  return;
-}
+  if (!appState.activeClientId) {
+    alert("Seleccioná un cliente antes de guardar el viaje");
+    return;
+  }
 
   try {
 
@@ -84,8 +84,8 @@ if (!appState.activeClientId) {
       cliente_id: appState.activeClientId,
       nombre: val("nombre"),
       destino: val("destino"),
-      fecha_inicio: val("fecha_inicio"),
-      fecha_fin: val("fecha_fin"),
+      fecha_inicio: formatDateForAPI(val("fecha_inicio")),
+      fecha_fin: formatDateForAPI(val("fecha_fin")),
       pasajero: val("pasajero"),
       tipo_viaje: val("tipo_viaje"),
       estado: val("estado"),
@@ -113,6 +113,16 @@ function val(key) {
 function set(key, value) {
   const el = document.querySelector(`[data-travel="${key}"]`);
   if (el) el.value = value ?? "";
+}
+
+function formatDateForInput(isoDate) {
+  if (!isoDate) return "";
+  return isoDate.split("T")[0];
+}
+
+function formatDateForAPI(dateValue) {
+  if (!dateValue) return null;
+  return new Date(dateValue).toISOString();
 }
 
 /*************************************
