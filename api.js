@@ -29,6 +29,7 @@ function getHeaders(extraHeaders = {}) {
  * GENERIC FETCH WRAPPER
  ******************************/
 export async function fetchJSON(endpoint, options = {}) {
+
   const res = await fetch(`${API_BASE}${endpoint}`, {
     headers: getHeaders(options.headers),
     ...options
@@ -51,8 +52,8 @@ export function getTravelsByClient(clientId) {
   return fetchJSON(`/api/viajes/cliente/${clientId}`);
 }
 
-/** Obtener un viaje puntual */
-export function getTravel(id) {
+/** Obtener viaje por ID */
+export function getTravelById(id) {
   return fetchJSON(`/api/viajes/${id}`);
 }
 
@@ -119,7 +120,7 @@ export function getClientDocuments(clientId) {
   return fetchJSON(`/api/client-documents/${clientId}`);
 }
 
-/** ⚠️ OJO: documentos con archivo se envían con FormData (NO JSON) */
+/* Upload con FormData */
 export function createClientDocument(formData) {
   return fetch(`${API_BASE}/api/client-documents`, {
     method: "POST",
