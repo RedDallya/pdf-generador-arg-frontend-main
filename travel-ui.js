@@ -31,6 +31,10 @@ async function loadTravelForm() {
     set("estado", travel.estado);
     set("notas", travel.notas);
 
+    console.log("TRAVEL:", travel);
+console.log("cliente_id:", travel.cliente_id);
+console.log("activeClientId:", appState.activeClientId);
+
     await fillClientAssociated(travel.cliente_id);
 
   } catch (err) {
