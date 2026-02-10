@@ -35,7 +35,7 @@ async function loadTravelForm() {
 console.log("cliente_id:", travel.cliente_id);
 console.log("activeClientId:", appState.activeClientId);
 
-    await fillClientAssociated(travel.cliente_id);
+    await fillClientAssociated(travel.cliente_id || appState.activeClientId);
 
   } catch (err) {
     console.error("Error cargando viaje", err);
@@ -72,7 +72,7 @@ document.addEventListener("click", async e => {
 
   if (!e.target.closest("[data-travel-save]")) return;
   if (!appState.activeTravelId) return;
-  
+
 if (!appState.activeClientId) {
   alert("Seleccioná un cliente antes de guardar el viaje");
   return;
