@@ -72,6 +72,11 @@ document.addEventListener("click", async e => {
 
   if (!e.target.closest("[data-travel-save]")) return;
   if (!appState.activeTravelId) return;
+  
+if (!appState.activeClientId) {
+  alert("Seleccioná un cliente antes de guardar el viaje");
+  return;
+}
 
   try {
 
