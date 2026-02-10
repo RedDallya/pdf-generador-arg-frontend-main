@@ -8,7 +8,7 @@ document.addEventListener("travel-selected", loadTravelForm);
 
 async function loadTravelForm() {
 
-  clearTravelForm();
+
 
   if (!appState.activeTravelId) return;
 
