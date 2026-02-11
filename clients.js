@@ -1,6 +1,14 @@
-import { API_BASE } from "./config.js";
 import { qs, val } from "./dom.js";
 import { appState, setActiveClientId } from "./state.js";
+import {
+  getClientes,
+  getCliente,
+  createCliente,
+  deleteCliente,
+  createClientDocument,
+  getClientDocuments
+} from "./api.js";
+import { fetchJSON } from "./api.js";
 
 /********************************
 INIT
@@ -13,11 +21,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 LOAD CLIENTES
 *********************************/
 export async function loadClients() {
-
-  const res = await fetch(`${API_BASE}/api/clientes`);
-  if (!res.ok) return console.error("Error cargando clientes");
-
-  const clients = await res.json();
+  const clients = await getClientes();
 
   const select = qs("[data-client-select]");
   if (!select) return;
@@ -36,7 +40,6 @@ export async function loadClients() {
 SELECT CLIENTE
 *********************************/
 document.addEventListener("change", async e => {
-
   const select = e.target.closest("[data-client-select]");
   if (!select) return;
 
@@ -49,18 +52,14 @@ document.addEventListener("change", async e => {
     return;
   }
 
-  const res = await fetch(`${API_BASE}/api/clientes/${id}`);
-  if (!res.ok) return alert("Error cargando cliente");
-
-  const client = await res.json();
+  const client = await getCliente(id);
 
   fillClientForm(client);
   loadClientDocuments(id);
-  document.dispatchEvent(new Event("travel-cleared"));
 
+  document.dispatchEvent(new Event("travel-cleared"));
   document.dispatchEvent(new Event("client-selected"));
 });
-
 
 /********************************
 GLOBAL CLICK HANDLER
@@ -86,43 +85,24 @@ document.addEventListener("click", async e => {
       created_at: val("created")
     };
 
-    const res = await fetch(
-      appState.activeClientId
-        ? `${API_BASE}/api/clientes/${appState.activeClientId}`
-        : `${API_BASE}/api/clientes`,
-      {
-        method: appState.activeClientId ? "PUT" : "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      }
-    );
-
-    if (!res.ok) return alert("Error guardando cliente");
-
-    const saved = await res.json();
+    const saved = await createCliente(payload);
     const clientId = saved.id || appState.activeClientId;
 
     setActiveClientId(clientId);
 
     await loadClients();
-
     qs("[data-client-select]").value = clientId;
 
-    const full = await fetch(`${API_BASE}/api/clientes/${clientId}`);
-    fillClientForm(await full.json());
+    const full = await getCliente(clientId);
+    fillClientForm(full);
   }
 
   /* ELIMINAR CLIENTE */
   if (e.target.closest("[data-client-delete]")) {
-
     if (!appState.activeClientId) return;
     if (!confirm("Eliminar cliente?")) return;
 
-    const res = await fetch(`${API_BASE}/api/clientes/${appState.activeClientId}`, {
-      method: "DELETE"
-    });
-
-    if (!res.ok) return alert("Error eliminando cliente");
+    await deleteCliente(appState.activeClientId);
 
     setActiveClientId(null);
     clearClientForm();
@@ -135,7 +115,6 @@ document.addEventListener("click", async e => {
     if (!appState.activeClientId) return alert("Seleccioná cliente");
 
     const formData = new FormData();
-
     formData.append("client_id", appState.activeClientId);
     formData.append("type", qs('[data-doc="type"]').value);
     formData.append("number", qs('[data-doc="number"]').value);
@@ -143,15 +122,11 @@ document.addEventListener("click", async e => {
     formData.append("notes", qs('[data-doc="notes"]').value);
 
     const fileInput = qs('[data-doc="files"]');
-
     if (fileInput.files[0]) {
       formData.append("file", fileInput.files[0]);
     }
 
-    await fetch(`${API_BASE}/api/client-documents`, {
-      method: "POST",
-      body: formData
-    });
+    await createClientDocument(formData);
 
     loadClientDocuments(appState.activeClientId);
     clearDocForm();
@@ -160,12 +135,12 @@ document.addEventListener("click", async e => {
   /* ELIMINAR DOCUMENTO */
   const deleteBtn = e.target.closest("[data-doc-delete]");
   if (deleteBtn) {
-
     if (!confirm("Eliminar documento?")) return;
 
-    await fetch(`${API_BASE}/api/client-documents/${deleteBtn.dataset.docDelete}`, {
-      method: "DELETE"
-    });
+    await fetchJSON(`/api/client-documents/${deleteBtn.dataset.docDelete}`, {
+  method: "DELETE"
+});
+
 
     loadClientDocuments(appState.activeClientId);
   }
@@ -175,11 +150,7 @@ document.addEventListener("click", async e => {
 DOCUMENTOS
 *********************************/
 async function loadClientDocuments(clientId) {
-
-  const res = await fetch(`${API_BASE}/api/client-documents/${clientId}`);
-  if (!res.ok) return;
-
-  const docs = await res.json();
+  const docs = await getClientDocuments(clientId);
 
   const list = qs("[data-doc-list]");
   if (!list) return;
@@ -187,20 +158,11 @@ async function loadClientDocuments(clientId) {
   list.innerHTML = "";
 
   docs.forEach(d => {
-
     const div = document.createElement("div");
 
     div.innerHTML = `
       <div class="border p-2 mb-2">
         <strong>${d.type}</strong> - ${d.number}
-
-        ${d.file_name
-        ? `<a href="${API_BASE}${d.file_path}" target="_blank">
-              📎 ${d.file_name}
-             </a>`
-        : ""
-      }
-
         <button data-doc-delete="${d.id}">Eliminar</button>
       </div>
     `;
