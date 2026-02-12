@@ -117,7 +117,7 @@ export const fetchForm = (e, f) =>
 /* =====================================
 ENDPOINTS (sin /api)
 ===================================== */
-export const getClientes = () => fetchJSON("/api/clientes");
+export const getClientes = () => fetchJSON("/clientes");
 export const getCliente = id => fetchJSON(`/clientes/${id}`);
 export const createCliente = d => fetchJSON("/clientes", { method: "POST", body: JSON.stringify(d) });
 export const updateCliente = (id, d) => fetchJSON(`/clientes/${id}`, { method: "PUT", body: JSON.stringify(d) });
