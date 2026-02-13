@@ -62,3 +62,20 @@ function initLoginForm() {
   });
 }
 
+import { logout } from "./api.js";
+
+function initLogoutButton() {
+  const btn = document.getElementById("logout-btn");
+  btn?.addEventListener("click", () => {
+    logout();
+  });
+}
+
+function initApp() {
+  restoreSession();
+  initLoginForm();
+  initLogoutButton(); // agrega el listener aquí
+  console.log("APP cargada correctamente");
+}
+
+document.addEventListener("DOMContentLoaded", initApp);
