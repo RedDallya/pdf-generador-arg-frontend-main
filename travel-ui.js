@@ -7,15 +7,10 @@ import { appState } from "./state.js";
 document.addEventListener("travel-selected", loadTravelForm);
 
 async function loadTravelForm() {
-
-
-
   if (!appState.activeTravelId) return;
 
   try {
-
     const travelId = appState.activeTravelId;
-
     const travel = await getTravelById(travelId);
 
     /* protección race condition */
@@ -36,7 +31,6 @@ async function loadTravelForm() {
     console.log("activeClientId:", appState.activeClientId);
 
     await fillClientAssociated(travel.cliente_id || appState.activeClientId);
-
   } catch (err) {
     console.error("Error cargando viaje", err);
   }
@@ -46,20 +40,16 @@ async function loadTravelForm() {
  * SINCRONIZAR CLIENTE ASOCIADO
  *************************************/
 async function fillClientAssociated(clienteId) {
-
   if (!clienteId) {
     set("cliente_nombre", "");
     return;
   }
 
   try {
-
     const cliente = await getCliente(clienteId);
-
     if (cliente) {
       set("cliente_nombre", cliente.nombre);
     }
-
   } catch (err) {
     console.error("Error cargando cliente asociado", err);
   }
@@ -69,7 +59,6 @@ async function fillClientAssociated(clienteId) {
  * GUARDAR FORMULARIO VIAJE
  *************************************/
 document.addEventListener("click", async e => {
-
   if (!e.target.closest("[data-travel-save]")) return;
   if (!appState.activeTravelId) return;
 
@@ -79,7 +68,6 @@ document.addEventListener("click", async e => {
   }
 
   try {
-
     const payload = {
       cliente_id: appState.activeClientId,
       nombre: val("nombre"),
@@ -89,7 +77,7 @@ document.addEventListener("click", async e => {
       pasajero: val("pasajero"),
       tipo_viaje: val("tipo_viaje"),
       estado: val("estado"),
-      notas: val("notas")
+      notas: val("notas"),
     };
 
     await updateTravel(appState.activeTravelId, payload);
@@ -97,7 +85,6 @@ document.addEventListener("click", async e => {
     document.dispatchEvent(new Event("travel-saved"));
 
     alert("Viaje guardado");
-
   } catch (err) {
     console.error("Error guardando viaje", err);
   }
@@ -122,18 +109,17 @@ function formatDateForInput(isoDate) {
 
 function formatDateForAPI(dateValue) {
   if (!dateValue) return null;
-  return new Date(dateValue).toISOString();
+  // Devuelve solo la fecha en formato 'YYYY-MM-DD' evitando errores MySQL
+  return dateValue.split("T")[0];
 }
 
 /*************************************
  * LIMPIAR FORMULARIO
  *************************************/
 export function clearTravelForm() {
-
   document.querySelectorAll("[data-travel]").forEach(el => {
     el.value = "";
   });
-
 }
 
 /*************************************
