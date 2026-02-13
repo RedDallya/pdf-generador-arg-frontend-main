@@ -6,7 +6,8 @@ import {
   setAuthToken,
   showApp,
   showLogin,
-  login
+  login,
+  logout
 } from "./api.js";
 
 /* UI / módulos funcionales */
@@ -24,6 +25,7 @@ document.addEventListener("DOMContentLoaded", initApp);
 function initApp() {
   restoreSession();
   initLoginForm();
+  initLogoutButton();
   console.log("APP cargada correctamente");
 }
 
@@ -55,6 +57,7 @@ function initLoginForm() {
 
     try {
       await login(username, password);
+      console.log("Login exitoso");
     } catch (err) {
       alert("Credenciales incorrectas");
       console.error(err);
@@ -62,20 +65,13 @@ function initLoginForm() {
   });
 }
 
-import { logout } from "./api.js";
-
+/* ================================
+LOGOUT BUTTON
+================================ */
 function initLogoutButton() {
   const btn = document.getElementById("logout-btn");
   btn?.addEventListener("click", () => {
     logout();
+    console.log("Sesión cerrada");
   });
 }
-
-function initApp() {
-  restoreSession();
-  initLoginForm();
-  initLogoutButton(); // agrega el listener aquí
-  console.log("APP cargada correctamente");
-}
-
-document.addEventListener("DOMContentLoaded", initApp);
