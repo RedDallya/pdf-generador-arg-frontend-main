@@ -9,7 +9,6 @@ import {
   getClientDocuments,
   deleteClientDocument,
 } from "./api.js";
-import { fetchJSON } from "./api.js";
 
 /********************************
 INIT
@@ -66,7 +65,6 @@ document.addEventListener("change", async e => {
 GLOBAL CLICK HANDLER
 *********************************/
 document.addEventListener("click", async e => {
-
   /* NUEVO CLIENTE */
   if (e.target.closest("[data-client-new]")) {
     setActiveClientId(null);
@@ -75,7 +73,6 @@ document.addEventListener("click", async e => {
 
   /* GUARDAR CLIENTE */
   if (e.target.closest("[data-client-save]")) {
-
     const payload = {
       nombre: val("name"),
       telefono: val("phone"),
@@ -112,7 +109,6 @@ document.addEventListener("click", async e => {
 
   /* GUARDAR DOCUMENTO */
   if (e.target.closest("[data-doc-save]")) {
-
     if (!appState.activeClientId) return alert("Seleccioná cliente");
 
     const formData = new FormData();
@@ -138,23 +134,11 @@ document.addEventListener("click", async e => {
   if (deleteBtn) {
     if (!confirm("Eliminar documento?")) return;
 
-    await fetchJSON(`/api/client-documents/${deleteBtn.dataset.docDelete}`, {
-  method: "DELETE"
-});
-
+    await deleteClientDocument(deleteBtn.dataset.docDelete);
 
     loadClientDocuments(appState.activeClientId);
   }
 });
-/* ELIMINAR DOCUMENTO */
-const deleteBtn = e.target.closest("[data-doc-delete]");
-if (deleteBtn) {
-  if (!confirm("Eliminar documento?")) return;
-
-  await deleteClientDocument(deleteBtn.dataset.docDelete);
-
-  loadClientDocuments(appState.activeClientId);
-}
 
 /********************************
 DOCUMENTOS
@@ -196,8 +180,9 @@ function fillClientForm(c) {
 }
 
 function clearClientForm() {
-  ["id", "name", "phone", "email", "notes", "status", "location", "created"]
-    .forEach(k => set(k, ""));
+  ["id", "name", "phone", "email", "notes", "status", "location", "created"].forEach(k =>
+    set(k, "")
+  );
 }
 
 function clearDocForm() {
