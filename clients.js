@@ -6,7 +6,8 @@ import {
   createCliente,
   deleteCliente,
   createClientDocument,
-  getClientDocuments
+  getClientDocuments,
+  deleteClientDocument,
 } from "./api.js";
 import { fetchJSON } from "./api.js";
 
@@ -145,6 +146,15 @@ document.addEventListener("click", async e => {
     loadClientDocuments(appState.activeClientId);
   }
 });
+/* ELIMINAR DOCUMENTO */
+const deleteBtn = e.target.closest("[data-doc-delete]");
+if (deleteBtn) {
+  if (!confirm("Eliminar documento?")) return;
+
+  await deleteClientDocument(deleteBtn.dataset.docDelete);
+
+  loadClientDocuments(appState.activeClientId);
+}
 
 /********************************
 DOCUMENTOS
