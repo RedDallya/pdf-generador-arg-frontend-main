@@ -143,6 +143,7 @@ export const deleteCliente = id => fetchJSON(`/clientes/${id}`, { method: "DELET
 
 export const getClientDocuments = id => fetchJSON(`/client-documents/${id}`);
 export const createClientDocument = f => fetchForm("/client-documents", f);
+export const deleteClientDocument = id => fetchJSON(`/client-documents/${id}`, { method: "DELETE" });
 
 export const getTravelsByClient = id => fetchJSON(`/viajes/cliente/${id}`);
 export const getTravelById = id => fetchJSON(`/viajes/${id}`);
