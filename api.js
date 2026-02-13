@@ -20,6 +20,9 @@ export function getAuthToken() {
   return authToken;
 }
 
+
+
+
 /* =====================================
 UI STATE
 ===================================== */
@@ -83,7 +86,22 @@ export async function apiFetch(endpoint, options = {}) {
   return res;
 }
 
-export const fetchJSON = (e, o) => apiFetch(e, o).then(r => r.json());
+
+
+
+export const fetchJSON = async (e, o) => {
+  const res = await apiFetch(e, o);
+  const contentType = res.headers.get("content-type");
+  
+  // Verificar que sea JSON antes de parsear
+  if (!contentType?.includes("application/json")) {
+    const text = await res.text();
+    console.error("Expected JSON but got:", contentType, text.substring(0, 200));
+    throw new Error(`Server returned ${contentType} instead of JSON`);
+  }
+  
+  return res.json();
+};
 
 /* =====================================
 AUTH
