@@ -8,7 +8,7 @@ import {
   showLogin,
   login
 } from "./api.js";
-import { logout } from "./api.js";
+
 /* UI / módulos funcionales */
 import "./travel-tabs.js";
 import "./travel-ui.js";
@@ -62,20 +62,3 @@ function initLoginForm() {
   });
 }
 
-
-
-function initLogoutButton() {
-  const btn = document.getElementById("logout-btn");
-  btn?.addEventListener("click", () => {
-    logout(); // Limpia tokens y muestra pantalla login
-  });
-}
-
-function initApp() {
-  restoreSession();
-  initLoginForm();
-  initLogoutButton();  // <--- agrega aquí
-  console.log("APP cargada correctamente");
-}
-
-document.addEventListener("DOMContentLoaded", initApp);
