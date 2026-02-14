@@ -1,11 +1,11 @@
 import { apiFetch } from "./api.js";
-import { appState } from "./app.js";
+import { appState } from "./state.js";
 
 document.addEventListener("click", async (e) => {
   if (!e.target.matches("[data-quote-save]")) return;
 
-  if (!appState.currentTrip) {
-    alert("Primero debés guardar el viaje");
+  if (!appState.activeTravelId) {
+    alert("Primero debés seleccionar o crear un viaje");
     return;
   }
 
@@ -27,7 +27,7 @@ document.addEventListener("click", async (e) => {
     method: "POST",
     body: JSON.stringify({
       ...basic,
-      viaje_id: appState.currentTrip,   // 🔥 LA CLAVE
+      viaje_id: appState.activeTravelId,  // 🔥 LA CLAVE REAL
       services
     })
   });
