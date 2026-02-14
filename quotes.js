@@ -1,7 +1,13 @@
 import { apiFetch } from "./api.js";
+import { appState } from "./app.js";
 
 document.addEventListener("click", async (e) => {
   if (!e.target.matches("[data-quote-save]")) return;
+
+  if (!appState.currentTrip) {
+    alert("Primero debés guardar el viaje");
+    return;
+  }
 
   const basic = {};
   document.querySelectorAll("[data-basic]").forEach(input => {
@@ -17,18 +23,14 @@ document.addEventListener("click", async (e) => {
     services.push(service);
   });
 
-  try {
-    await apiFetch("/cotizaciones", {
-      method: "POST",
-      body: JSON.stringify({
-        ...basic,
-        services
-      })
-    });
+  await apiFetch("/cotizaciones", {
+    method: "POST",
+    body: JSON.stringify({
+      ...basic,
+      viaje_id: appState.currentTrip,   // 🔥 LA CLAVE
+      services
+    })
+  });
 
-    alert("Cotización guardada correctamente");
-  } catch (err) {
-    console.error(err);
-    alert("Error guardando cotización");
-  }
+  alert("Cotización guardada correctamente");
 });
