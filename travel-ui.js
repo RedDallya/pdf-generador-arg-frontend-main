@@ -1,5 +1,6 @@
 import { updateTravel, getTravelById, getCliente } from "./api.js";
 import { appState } from "./state.js";
+import { ensureTravelExists } from "./travel.bootstrap.js";
 
 /*************************************
  * CARGAR FORMULARIO AL SELECCIONAR VIAJE
@@ -61,7 +62,7 @@ async function fillClientAssociated(clienteId) {
 document.addEventListener("click", async e => {
   if (!e.target.closest("[data-travel-save]")) return;
   if (!appState.activeTravelId) return;
-
+ await ensureTravelExists(); // 👈 ESTA LÍNEA
   if (!appState.activeClientId) {
     alert("Seleccioná un cliente antes de guardar el viaje");
     return;
