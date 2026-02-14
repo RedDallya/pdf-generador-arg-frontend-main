@@ -9,28 +9,26 @@ document.addEventListener("click", async (e) => {
     return;
   }
 
-  const basic = {};
-  document.querySelectorAll("[data-basic]").forEach(input => {
-    basic[input.dataset.basic] = input.value;
-  });
+  try {
+    const payload = {
+      viaje_id: appState.activeTravelId,
+      titulo: document.querySelector('[data-basic="titulo"]')?.value || "",
+      condicion_legal: document.querySelector('[data-basic="condicion_legal"]')?.value || ""
+    };
 
-  const services = [];
-  document.querySelectorAll(".service-card").forEach(card => {
-    const service = {};
-    card.querySelectorAll("[data-field]").forEach(input => {
-      service[input.dataset.field] = input.value;
+    const res = await apiFetch("/cotizaciones", {
+      method: "POST",
+      body: JSON.stringify(payload)
     });
-    services.push(service);
-  });
 
-  await apiFetch("/cotizaciones", {
-    method: "POST",
-    body: JSON.stringify({
-      ...basic,
-      viaje_id: appState.activeTravelId,  // 🔥 LA CLAVE REAL
-      services
-    })
-  });
+    const data = await res.json();
 
-  alert("Cotización guardada correctamente");
+    const cotizacionId = data.id;
+
+    alert("Cotización guardada correctamente");
+
+  } catch (err) {
+    console.error("Error creando cotización:", err);
+    alert("Error al guardar cotización");
+  }
 });
