@@ -12,17 +12,20 @@ async function loadQuotes() {
 
   const container = document.getElementById("quotes-list");
   container.innerHTML = "";
+container.innerHTML += `
+  <div class="quote-item">
+    <div class="quote-header" data-toggle="${q.id}">
+      <strong>${q.titulo}</strong>
+    </div>
+    <div class="quote-body" id="quote-${q.id}" style="display:none;">
+      <div>Condición legal: ${q.condicion_legal}</div>
+      <div>Total: ${q.total}</div>
+      <button data-edit="${q.id}">Editar</button>
+      <button data-delete="${q.id}">Eliminar</button>
+    </div>
+  </div>
+`;
 
-  quotes.forEach(q => {
-    container.innerHTML += `
-      <div class="quote-item" style="border:1px solid #ccc;padding:10px;margin-bottom:8px;">
-        <strong>${q.titulo}</strong>
-        <div>ID: ${q.id}</div>
-        <button data-edit="${q.id}">Editar</button>
-        <button data-delete="${q.id}">Eliminar</button>
-      </div>
-    `;
-  });
  await renderTravelHeader();
 
 
@@ -114,3 +117,10 @@ document.addEventListener("click", async (e) => {
    AUTOLOAD cuando cambia viaje
 ========================= */
 document.addEventListener("travelChanged", loadQuotes);
+
+document.addEventListener("click", (e) => {
+  if (!e.target.matches("[data-toggle]")) return;
+  const id = e.target.dataset.toggle;
+  const body = document.getElementById(`quote-${id}`);
+  body.style.display = body.style.display === "none" ? "block" : "none";
+});
