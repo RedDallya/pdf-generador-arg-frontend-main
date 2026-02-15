@@ -17,16 +17,10 @@ async function safeJson(res) {
 ========================= */
 export async function loadQuotes() {
   try {
-    if (!appState.activeTravelId) {
-      console.warn("No hay viaje activo");
-      return;
-    }
+    if (!appState.activeTravelId) return;
 
     const container = document.getElementById("quotes-list");
-    if (!container) {
-      console.warn("No existe #quotes-list en el DOM");
-      return;
-    }
+    if (!container) return;
 
     const res = await apiFetch(
       `/cotizaciones/viaje/${appState.activeTravelId}`
@@ -73,7 +67,6 @@ export async function loadQuotes() {
       });
     }
 
-    // Siempre renderizamos el header luego
     await renderTravelHeader();
 
   } catch (err) {
@@ -96,11 +89,11 @@ async function renderTravelHeader() {
       header.innerHTML = `
         <h3>Viaje #${viaje.id}</h3>
         <div>Cliente: ${viaje.cliente_nombre || "-"}</div>
-        <div>Fecha: ${viaje.fecha || "-"}</div>
+        <div>Fecha: ${viaje.fecha_inicio || "-"}</div>
       `;
     }
 
-    // 🔥 Autocompletar cliente correctamente
+    // 🔥 Autocompletar input correcto
     setClienteEnFormulario(viaje);
 
   } catch (err) {
@@ -109,17 +102,17 @@ async function renderTravelHeader() {
 }
 
 /* =========================
-   SET CLIENTE FORMULARIO
+   AUTOCOMPLETAR CLIENTE
 ========================= */
 function setClienteEnFormulario(viaje) {
-  const clienteInput = document.querySelector('[data-basic="cliente_nombre"]');
+  const clienteInput = document.querySelector('[data-basic="cliente_nom"]');
   if (clienteInput) {
     clienteInput.value = viaje.cliente_nombre || "";
   }
 }
 
 /* =========================
-   CREAR / ACTUALIZAR COTIZACIÓN
+   GUARDAR COTIZACIÓN
 ========================= */
 document.addEventListener("click", async (e) => {
   if (!e.target.matches("[data-quote-save]")) return;
@@ -172,8 +165,7 @@ document.addEventListener("click", async (e) => {
     await loadQuotes();
 
   } catch (err) {
-    console.error("Error eliminando cotización:", err);
-    alert("No se pudo eliminar");
+    console.error("Error eliminando:", err);
   }
 });
 
@@ -222,12 +214,10 @@ document.addEventListener("click", (e) => {
    AUTOLOAD
 ========================= */
 
-// Cuando cambia el viaje
 document.addEventListener("travelChanged", async () => {
   await loadQuotes();
 });
 
-// Al cargar la vista
 document.addEventListener("DOMContentLoaded", async () => {
   if (appState.activeTravelId) {
     await loadQuotes();
