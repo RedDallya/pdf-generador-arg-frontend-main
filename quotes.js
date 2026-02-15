@@ -117,39 +117,34 @@ async function renderTravelHeader() {
 document.addEventListener("click", async (e) => {
   if (!e.target.matches("[data-quote-save]")) return;
 
-  if (!appState.activeTravelId) {
-    alert("Primero debés seleccionar o crear un viaje");
-    return;
-  }
+  const id = document.querySelector('[data-basic="idpresupuesto"]').value;
+
+  const payload = {
+    viaje_id: appState.activeTravelId,
+    titulo: document.querySelector('[data-basic="titulo"]').value,
+    condicion_legal: document.querySelector('[data-basic="condicion_legal"]').value
+  };
 
   try {
-    const payload = {
-      viaje_id: appState.activeTravelId,
-      titulo:
-        document.querySelector('[data-basic="titulo"]')?.value?.trim() || "",
-      condicion_legal:
-        document.querySelector('[data-basic="condicion_legal"]')?.value?.trim() || ""
-    };
 
-    if (!payload.titulo) {
-      alert("El título es obligatorio");
-      return;
+    if (id) {
+      // UPDATE
+      await apiFetch(`/cotizaciones/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(payload)
+      });
+    } else {
+      // CREATE
+      await apiFetch("/cotizaciones", {
+        method: "POST",
+        body: JSON.stringify(payload)
+      });
     }
-
-    const res = await apiFetch("/cotizaciones", {
-      method: "POST",
-      body: JSON.stringify(payload)
-    });
-
-    await safeJson(res);
-
-    alert("Cotización guardada correctamente");
 
     await loadQuotes();
 
   } catch (err) {
-    console.error("Error creando cotización:", err);
-    alert("Error al guardar cotización");
+    console.error("Error guardando:", err);
   }
 });
 
@@ -188,24 +183,21 @@ document.addEventListener("click", async (e) => {
   const id = e.target.dataset.edit;
   if (!id) return;
 
-  const nuevoTitulo = prompt("Nuevo título:");
-  if (!nuevoTitulo?.trim()) return;
-
   try {
-    const res = await apiFetch(`/cotizaciones/${id}`, {
-      method: "PUT",
-      body: JSON.stringify({ titulo: nuevoTitulo.trim() })
-    });
+    const res = await apiFetch(`/cotizaciones/${id}`);
+    const cotizacion = await res.json();
 
-    await safeJson(res);
-
-    await loadQuotes();
+    document.querySelector('[data-basic="idpresupuesto"]').value = cotizacion.id || "";
+    document.querySelector('[data-basic="titulo"]').value = cotizacion.titulo || "";
+    document.querySelector('[data-basic="condicion_legal"]').value = cotizacion.condicion_legal || "";
+    document.querySelector('[data-basic="creationfecha"]').value =
+      cotizacion.fecha_creacion?.split("T")[0] || "";
 
   } catch (err) {
-    console.error("Error editando cotización:", err);
-    alert("No se pudo editar");
+    console.error("Error cargando cotización:", err);
   }
 });
+
 
 /* =========================
    TOGGLE
