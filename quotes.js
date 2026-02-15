@@ -120,9 +120,15 @@ document.addEventListener("click", async (e) => {
 ========================= */
 document.addEventListener("travelChanged", loadQuotes);
 
+
 document.addEventListener("click", (e) => {
-  if (!e.target.matches("[data-toggle]")) return;
-  const id = e.target.dataset.toggle;
+
+const toggle = e.target.closest("[data-toggle]");
+if (!toggle) return;
+
+const id = toggle.dataset.toggle;
+
+
   const body = document.getElementById(`quote-${id}`);
   body.style.display = body.style.display === "none" ? "block" : "none";
 });
