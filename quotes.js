@@ -101,7 +101,10 @@ async function renderTravelHeader() {
     }
 
     // Autocompletar cliente en formulario
-    const clienteInput = document.querySelector('[data-basic="cliente_nombre"]');
+    const clienteInput = document.querySelector(
+  '.budget-block [data-basic="cliente_nombre"]'
+);
+
     if (clienteInput) {
       clienteInput.value = viaje.cliente_nombre || "";
     }
