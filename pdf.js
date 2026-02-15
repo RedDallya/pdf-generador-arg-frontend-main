@@ -11,38 +11,25 @@ function getActiveCotizacionId() {
 /************************************************************
  * GENERAR PDF
  ************************************************************/
-document.addEventListener("click", async (e) => {
+document.addEventListener("click", (e) => {
   const btn = e.target.closest("[data-pdf-generate]");
   if (!btn) return;
 
   const type = btn.dataset.pdfType || "partial";
-  const cotizacionId = getActiveCotizacionId();
+  const cotizacionId = appState.activeQuoteId;
 
   if (!cotizacionId) {
     alert("No hay cotización activa seleccionada.");
     return;
   }
 
-  try {
-    // 1) Generar PDF en backend
-    await apiFetch(`/pdfs/${type}?cotizacion_id=${cotizacionId}`, {
-      method: "GET"
-    });
-
-    // 2) Abrir el PDF autenticado
-    window.open(
-      `${location.origin}/api/pdfs/latest/${cotizacionId}`,
-      "_blank"
-    );
-
-    // 3) Refrescar lista de PDFs
-    await loadPdfs(cotizacionId);
-
-  } catch (err) {
-    console.error("Error generando PDF", err);
-    alert("No se pudo generar el PDF.");
-  }
+  // Abrimos directamente el endpoint GET que ya genera y descarga el PDF
+  window.open(
+    `${location.origin}/api/pdfs/${type}?cotizacion_id=${cotizacionId}`,
+    "_blank"
+  );
 });
+
 
 /************************************************************
  * CARGAR SECCIONES PDF
