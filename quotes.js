@@ -39,41 +39,41 @@ export async function loadQuotes() {
     if (!quotes.length) {
       container.innerHTML =
         `<div style="opacity:.6">No hay cotizaciones aún</div>`;
-      return;
-    }
-
-    quotes.forEach(q => {
-      container.insertAdjacentHTML(
-        "beforeend",
-        `
-        <div class="quote-item" 
-             style="border:1px solid #ddd;border-radius:6px;padding:12px;margin-bottom:10px;background:#fff;">
-          
-          <div class="quote-header" 
-               data-toggle="${q.id}" 
-               style="cursor:pointer;display:flex;justify-content:space-between;">
+    } else {
+      quotes.forEach(q => {
+        container.insertAdjacentHTML(
+          "beforeend",
+          `
+          <div class="quote-item" 
+               style="border:1px solid #ddd;border-radius:6px;padding:12px;margin-bottom:10px;background:#fff;">
             
-            <strong>${q.titulo || "Sin título"}</strong>
-            <span>▼</span>
-          </div>
+            <div class="quote-header" 
+                 data-toggle="${q.id}" 
+                 style="cursor:pointer;display:flex;justify-content:space-between;">
+              
+              <strong>${q.titulo || "Sin título"}</strong>
+              <span>▼</span>
+            </div>
 
-          <div class="quote-body" 
-               id="quote-${q.id}" 
-               style="display:none;margin-top:10px;">
+            <div class="quote-body" 
+                 id="quote-${q.id}" 
+                 style="display:none;margin-top:10px;">
 
-            <div><strong>Condición legal:</strong> ${q.condicion_legal || "-"}</div>
-            <div><strong>Total:</strong> USD ${q.total || "0.00"}</div>
+              <div><strong>Condición legal:</strong> ${q.condicion_legal || "-"}</div>
+              <div><strong>Total:</strong> USD ${q.total || "0.00"}</div>
 
-            <div style="margin-top:8px;">
-              <button data-edit="${q.id}">Editar</button>
-              <button data-delete="${q.id}">Eliminar</button>
+              <div style="margin-top:8px;">
+                <button data-edit="${q.id}">Editar</button>
+                <button data-delete="${q.id}">Eliminar</button>
+              </div>
             </div>
           </div>
-        </div>
-        `
-      );
-    });
+          `
+        );
+      });
+    }
 
+    // Siempre renderizamos el header luego
     await renderTravelHeader();
 
   } catch (err) {
@@ -95,19 +95,13 @@ async function renderTravelHeader() {
     if (header) {
       header.innerHTML = `
         <h3>Viaje #${viaje.id}</h3>
-        <div>Cliente: ${viaje.cliente_nom || "-"}</div>
+        <div>Cliente: ${viaje.cliente_nombre || "-"}</div>
         <div>Fecha: ${viaje.fecha || "-"}</div>
       `;
     }
 
-    // Autocompletar cliente en formulario
-    const clienteInput = document.querySelector(
-  '.budget-block [data-basic="cliente_nom"]'
-);
-
-    if (clienteInput) {
-      clienteInput.value = viaje.cliente_nom || "";
-    }
+    // 🔥 Autocompletar cliente correctamente
+    setClienteEnFormulario(viaje);
 
   } catch (err) {
     console.error("Error cargando header del viaje:", err);
@@ -115,7 +109,17 @@ async function renderTravelHeader() {
 }
 
 /* =========================
-   CREAR COTIZACIÓN
+   SET CLIENTE FORMULARIO
+========================= */
+function setClienteEnFormulario(viaje) {
+  const clienteInput = document.querySelector('[data-basic="cliente_nombre"]');
+  if (clienteInput) {
+    clienteInput.value = viaje.cliente_nombre || "";
+  }
+}
+
+/* =========================
+   CREAR / ACTUALIZAR COTIZACIÓN
 ========================= */
 document.addEventListener("click", async (e) => {
   if (!e.target.matches("[data-quote-save]")) return;
@@ -129,15 +133,12 @@ document.addEventListener("click", async (e) => {
   };
 
   try {
-
     if (id) {
-      // UPDATE
       await apiFetch(`/cotizaciones/${id}`, {
         method: "PUT",
         body: JSON.stringify(payload)
       });
     } else {
-      // CREATE
       await apiFetch("/cotizaciones", {
         method: "POST",
         body: JSON.stringify(payload)
@@ -168,7 +169,6 @@ document.addEventListener("click", async (e) => {
     });
 
     await safeJson(res);
-
     await loadQuotes();
 
   } catch (err) {
@@ -178,7 +178,7 @@ document.addEventListener("click", async (e) => {
 });
 
 /* =========================
-   EDITAR (mínimo)
+   EDITAR
 ========================= */
 document.addEventListener("click", async (e) => {
   if (!e.target.matches("[data-edit]")) return;
@@ -188,7 +188,7 @@ document.addEventListener("click", async (e) => {
 
   try {
     const res = await apiFetch(`/cotizaciones/${id}`);
-    const cotizacion = await res.json();
+    const cotizacion = await safeJson(res);
 
     document.querySelector('[data-basic="idpresupuesto"]').value = cotizacion.id || "";
     document.querySelector('[data-basic="titulo"]').value = cotizacion.titulo || "";
@@ -200,7 +200,6 @@ document.addEventListener("click", async (e) => {
     console.error("Error cargando cotización:", err);
   }
 });
-
 
 /* =========================
    TOGGLE
