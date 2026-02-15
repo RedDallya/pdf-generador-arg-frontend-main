@@ -2,34 +2,43 @@ import { apiFetch } from "./api.js";
 import { appState } from "./state.js";
 
 /************************************************************
- * OBTENER COTIZACIÓN ACTIVA DESDE ESTADO GLOBAL
+ * OBTENER COTIZACIÓN ACTIVA
  ************************************************************/
 function getActiveCotizacionId() {
   return appState.activeQuoteId || null;
 }
 
 /************************************************************
- * GENERAR PDF
+ * GENERAR PDF (Railway + JWT seguro)
  ************************************************************/
-document.addEventListener("click", (e) => {
+document.addEventListener("click", async (e) => {
   const btn = e.target.closest("[data-pdf-generate]");
   if (!btn) return;
 
   const type = btn.dataset.pdfType || "partial";
-  const cotizacionId = appState.activeQuoteId;
+  const cotizacionId = getActiveCotizacionId();
 
   if (!cotizacionId) {
     alert("No hay cotización activa seleccionada.");
     return;
   }
 
-  // Abrimos directamente el endpoint GET que ya genera y descarga el PDF
-  window.open(
-    `${location.origin}/api/pdfs/${type}?cotizacion_id=${cotizacionId}`,
-    "_blank"
-  );
-});
+  try {
+    const res = await apiFetch(
+      `/pdfs/${type}?cotizacion_id=${cotizacionId}`,
+      { method: "GET" }
+    );
 
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+
+    window.open(url, "_blank");
+
+  } catch (err) {
+    console.error("Error generando PDF", err);
+    alert("No se pudo generar el PDF.");
+  }
+});
 
 /************************************************************
  * CARGAR SECCIONES PDF
@@ -78,7 +87,9 @@ function renderPdfSections(sections) {
 
     div.innerHTML = `
       <strong>${section.title}</strong>
-      <textarea rows="3" class="form-control" readonly>${section.content}</textarea>
+      <textarea rows="3" class="form-control" readonly>
+${section.content}
+      </textarea>
     `;
 
     container.appendChild(div);
@@ -101,9 +112,9 @@ function renderPdfList(pdfs) {
 
     div.innerHTML = `
       <div>
-        <strong>${pdf.name}</strong>
+        <strong>${pdf.nombre || pdf.name}</strong>
         <div class="small text-muted">
-          ${new Date(pdf.createdAt).toLocaleString()}
+          ${new Date(pdf.created_at || pdf.createdAt).toLocaleString()}
         </div>
       </div>
       <div class="d-flex gap-2">
@@ -118,20 +129,32 @@ function renderPdfList(pdfs) {
 
     container.appendChild(div);
 
-    // Ver PDF
-    div.querySelector("[data-pdf-view]").addEventListener("click", () => {
-      window.open(pdf.url, "_blank");
+    /* =========================
+       VER PDF (seguro con JWT)
+    ========================== */
+    div.querySelector("[data-pdf-view]").addEventListener("click", async () => {
+      try {
+        const res = await apiFetch(`/pdfs/latest/${pdf.cotizacion_id}`);
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        window.open(url, "_blank");
+      } catch (err) {
+        console.error("Error viendo PDF", err);
+        alert("Error abriendo PDF");
+      }
     });
 
-    // Descargar PDF
+    /* =========================
+       DESCARGAR PDF
+    ========================== */
     div.querySelector("[data-pdf-download]").addEventListener("click", async () => {
       try {
-        const res = await apiFetch(pdf.url);
+        const res = await apiFetch(`/pdfs/latest/${pdf.cotizacion_id}`);
         const blob = await res.blob();
 
         const a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
-        a.download = pdf.name;
+        a.download = pdf.nombre || pdf.name || "documento.pdf";
         a.click();
       } catch (err) {
         console.error("Error descargando PDF", err);
