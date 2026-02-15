@@ -12,24 +12,26 @@ async function loadQuotes() {
 
   const container = document.getElementById("quotes-list");
   container.innerHTML = "";
-container.innerHTML += `
-  <div class="quote-item">
-    <div class="quote-header" data-toggle="${q.id}">
-      <strong>${q.titulo}</strong>
-    </div>
-    <div class="quote-body" id="quote-${q.id}" style="display:none;">
-      <div>Condición legal: ${q.condicion_legal}</div>
-      <div>Total: ${q.total}</div>
-      <button data-edit="${q.id}">Editar</button>
-      <button data-delete="${q.id}">Eliminar</button>
-    </div>
-  </div>
-`;
 
- await renderTravelHeader();
+  quotes.forEach(q => {
+    container.innerHTML += `
+      <div class="quote-item" style="border:1px solid #ccc;padding:10px;margin-bottom:8px;">
+        <div class="quote-header" data-toggle="${q.id}" style="cursor:pointer;">
+          <strong>${q.titulo}</strong>
+        </div>
+        <div class="quote-body" id="quote-${q.id}" style="display:none;margin-top:8px;">
+          <div><strong>Condición legal:</strong> ${q.condicion_legal || "-"}</div>
+          <div><strong>Total:</strong> ${q.total || "0.00"}</div>
+          <button data-edit="${q.id}">Editar</button>
+          <button data-delete="${q.id}">Eliminar</button>
+        </div>
+      </div>
+    `;
+  });
 
-
+  await renderTravelHeader();
 }
+
 
  async function renderTravelHeader() {
   const res = await apiFetch(`/viajes/${appState.activeTravelId}`);
