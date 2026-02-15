@@ -13,6 +13,10 @@ body {
 .container {
   max-width: 980px;
 }
+.quote-selected {
+  border: 2px solid #007bff !important;
+  background: #eef5ff;
+}
 
 /* =========================
    CARD (BOOSTRAP OVERRIDE)
