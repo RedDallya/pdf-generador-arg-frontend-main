@@ -1,5 +1,9 @@
 import { apiFetch } from "./api.js";
+import { appState } from "./state.js";
 
+function getActiveCotizacionId() {
+  return appState.activeQuoteId || null;
+}
 /************************************************************
  * GENERAR PDF
  ************************************************************/
