@@ -141,3 +141,8 @@ const id = toggle.dataset.toggle;
 });
 
 
+document.addEventListener("DOMContentLoaded", () => {
+  if (appState.activeTravelId) {
+    loadQuotes();
+  }
+});
