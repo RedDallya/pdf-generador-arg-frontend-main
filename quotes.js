@@ -95,18 +95,18 @@ async function renderTravelHeader() {
     if (header) {
       header.innerHTML = `
         <h3>Viaje #${viaje.id}</h3>
-        <div>Cliente: ${viaje.cliente_nombre || "-"}</div>
+        <div>Cliente: ${viaje.cliente_nom || "-"}</div>
         <div>Fecha: ${viaje.fecha || "-"}</div>
       `;
     }
 
     // Autocompletar cliente en formulario
     const clienteInput = document.querySelector(
-  '.budget-block [data-basic="cliente_nombre"]'
+  '.budget-block [data-basic="cliente_nom"]'
 );
 
     if (clienteInput) {
-      clienteInput.value = viaje.cliente_nombre || "";
+      clienteInput.value = viaje.cliente_nom || "";
     }
 
   } catch (err) {
