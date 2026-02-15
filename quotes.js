@@ -23,8 +23,22 @@ async function loadQuotes() {
       </div>
     `;
   });
+ await renderTravelHeader();
+
+
 }
 
+ async function renderTravelHeader() {
+  const res = await apiFetch(`/viajes/${appState.activeTravelId}`);
+  const viaje = await res.json();
+
+  const header = document.getElementById("travel-header");
+  header.innerHTML = `
+    <h3>Viaje #${viaje.id}</h3>
+    <div>Cliente: ${viaje.cliente_nombre}</div>
+    <div>Fecha: ${viaje.fecha}</div>
+  `;
+}
 /* =========================
    CREAR
 ========================= */
