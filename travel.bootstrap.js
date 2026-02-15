@@ -20,6 +20,7 @@ export async function ensureTravelExists() {
   const travel = await createTravel(payload);
 
   appState.activeTravelId = travel.id;
+document.dispatchEvent(new Event("travelChanged"));
 
   document.dispatchEvent(new Event("travel-selected"));
 }
