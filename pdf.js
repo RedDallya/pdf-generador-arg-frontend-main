@@ -26,7 +26,7 @@ document.addEventListener("click", async (e) => {
   try {
     // 1) Generar PDF en backend
     await apiFetch(`/pdfs/${type}?cotizacion_id=${cotizacionId}`, {
-      method: "POST"
+      method: "GET"
     });
 
     // 2) Abrir el PDF autenticado
