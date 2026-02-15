@@ -28,7 +28,7 @@ async function loadQuotes() {
       </div>
     `;
   });
-
+ await fillClientAssociated(travel.cliente_id || appState.activeClientId);
   await renderTravelHeader();
 }
 
@@ -132,3 +132,22 @@ const id = toggle.dataset.toggle;
   const body = document.getElementById(`quote-${id}`);
   body.style.display = body.style.display === "none" ? "block" : "none";
 });
+
+/*************************************
+ * SINCRONIZAR CLIENTE ASOCIADO
+ *************************************/
+async function fillClientAssociated(clienteId) {
+  if (!clienteId) {
+    set("cliente_nombre", "");
+    return;
+  }
+
+  try {
+    const cliente = await getCliente(clienteId);
+    if (cliente) {
+      set("cliente_nombre", cliente.nombre);
+    }
+  } catch (err) {
+    console.error("Error cargando cliente asociado", err);
+  }
+}
