@@ -206,9 +206,23 @@ document.addEventListener("click", (e) => {
   const body = document.getElementById(`quote-${id}`);
   if (!body) return;
 
+  // Toggle visual
   body.style.display =
     body.style.display === "none" ? "block" : "none";
+
+  // 🔥 Guardar cotización activa
+  appState.activeQuoteId = id;
+
+  // 🔥 Resaltar visualmente la seleccionada
+  document.querySelectorAll(".quote-item").forEach(el =>
+    el.classList.remove("quote-selected")
+  );
+
+  toggle.closest(".quote-item")?.classList.add("quote-selected");
+
+  console.log("Cotización activa:", id);
 });
+
 
 /* =========================
    AUTOLOAD
