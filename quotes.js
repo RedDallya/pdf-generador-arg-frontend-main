@@ -1,5 +1,6 @@
 import { apiFetch } from "./api.js";
 import { appState } from "./state.js";
+import { loadServicios } from "./services-loader.js";
 
 /* =========================
    UTIL
@@ -38,19 +39,19 @@ export async function loadQuotes() {
         container.insertAdjacentHTML(
           "beforeend",
           `
-          <div class="quote-item" 
+          <div class="quote-item"
                style="border:1px solid #ddd;border-radius:6px;padding:12px;margin-bottom:10px;background:#fff;">
-            
-            <div class="quote-header" 
-                 data-toggle="${q.id}" 
+
+            <div class="quote-header"
+                 data-toggle="${q.id}"
                  style="cursor:pointer;display:flex;justify-content:space-between;">
-              
+
               <strong>${q.titulo || "Sin título"}</strong>
               <span>▼</span>
             </div>
 
-            <div class="quote-body" 
-                 id="quote-${q.id}" 
+            <div class="quote-body"
+                 id="quote-${q.id}"
                  style="display:none;margin-top:10px;">
 
               <div><strong>Condición legal:</strong> ${q.condicion_legal || "-"}</div>
@@ -93,7 +94,6 @@ async function renderTravelHeader() {
       `;
     }
 
-    // 🔥 Autocompletar input correcto
     setClienteEnFormulario(viaje);
 
   } catch (err) {
@@ -101,9 +101,6 @@ async function renderTravelHeader() {
   }
 }
 
-/* =========================
-   AUTOCOMPLETAR CLIENTE
-========================= */
 function setClienteEnFormulario(viaje) {
   const clienteInput = document.querySelector('[data-basic="cliente_nom"]');
   if (clienteInput) {
@@ -112,7 +109,7 @@ function setClienteEnFormulario(viaje) {
 }
 
 /* =========================
-   GUARDAR COTIZACIÓN
+   GUARDAR
 ========================= */
 document.addEventListener("click", async (e) => {
   if (!e.target.matches("[data-quote-save]")) return;
@@ -194,9 +191,10 @@ document.addEventListener("click", async (e) => {
 });
 
 /* =========================
-   TOGGLE
+   TOGGLE + SELECCIÓN ACTIVA
 ========================= */
-document.addEventListener("click", (e) => {
+document.addEventListener("click", async (e) => {
+
   const toggle = e.target.closest("[data-toggle]");
   if (!toggle) return;
 
@@ -206,14 +204,15 @@ document.addEventListener("click", (e) => {
   const body = document.getElementById(`quote-${id}`);
   if (!body) return;
 
-  // Toggle visual
   body.style.display =
     body.style.display === "none" ? "block" : "none";
 
-  // 🔥 Guardar cotización activa
   appState.activeQuoteId = id;
 
-  // 🔥 Resaltar visualmente la seleccionada
+  // 🔥 cargar servicios reales desde backend
+  await loadServicios();
+
+  // 🔥 resaltar
   document.querySelectorAll(".quote-item").forEach(el =>
     el.classList.remove("quote-selected")
   );
@@ -223,11 +222,9 @@ document.addEventListener("click", (e) => {
   console.log("Cotización activa:", id);
 });
 
-
 /* =========================
    AUTOLOAD
 ========================= */
-
 document.addEventListener("travelChanged", async () => {
   await loadQuotes();
 });
