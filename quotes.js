@@ -223,3 +223,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     await loadQuotes();
   }
 });
+
+document.getElementById("btn-ver-viaje")?.addEventListener("click", async () => {
+  if (!appState.activeTravelId) {
+    alert("Seleccioná un viaje primero");
+    return;
+  }
+  await loadQuotes();
+});
